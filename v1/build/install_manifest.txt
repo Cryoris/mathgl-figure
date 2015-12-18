@@ -1,0 +1,2 @@
+/usr/local/lib/libFigure.a
+/usr/local/include/figure.hpp
