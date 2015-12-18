@@ -1,0 +1,17 @@
+===================== INSTALLATION OF FIGURE LIBRARY =====================
+
+1. Possibility (ADVISED):
+To install the Figure library correctly with CMake follow these steps:
+(Make sure you have CMake installed!)
+
+   $ mkdir build
+   $ cd build
+   $ cmake ..
+   $ sudo make install
+
+You're done now! Ignore the rest of this file.
+
+2. Possibility:
+In the directory where "figure.hpp" and "figure.cpp" are, do:
+
+  $ 
