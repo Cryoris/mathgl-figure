@@ -2,5 +2,6 @@ build
 a.out
 *.aux
 *.log
+*.swp
 CMakeFiles
 
