@@ -89,19 +89,28 @@ void Figure::setRanges(const mglData& xd, const mglData& yd)
   const double xMin(xd.Minimal()), xMax(xd.Maximal()),
                yMin(yd.Minimal()), yMax(yd.Maximal());
 
+  const double xTot = xMax - xMin;
+  const double yTot = yMax - yMin;
+  // width/height of additional margin (in percentage) of the total width/height
+  const double vertMargin = 0.1; // margin top and bottom
+  const double horizMargin = 0.0; // margin left and right
+
   if (initRanges_) { // ranges have not been set yet, so set it according to data
-    ranges_[0] = xMin; ranges_[1] = xMax; ranges_[2] = yMin; ranges_[3] = yMax;
+    ranges_[0] = xMin - horizMargin*xTot; 
+    ranges_[1] = xMax + horizMargin*xTot; 
+    ranges_[2] = yMin - vertMargin*yTot; 
+    ranges_[3] = yMax + vertMargin*yTot;
     initRanges_ = false;
   }
   else { // check in which directions ranges have to be extended
     if (ranges_[0] > xMin)
-      ranges_[0] = xMin;
+      ranges_[0] = xMin - horizMargin*xTot; 
     if (ranges_[1] < xMax)
-      ranges_[1] = xMax;
+      ranges_[1] = xMax + horizMargin*xTot; 
     if (ranges_[2] > yMin)
-      ranges_[2] = yMin;
+      ranges_[2] = yMin - vertMargin*yTot; 
     if (ranges_[3] < yMax)
-      ranges_[3] = yMax;
+      ranges_[3] = yMax + vertMargin*yTot; 
   }
   gr_.SetRanges(ranges_[0], ranges_[1], ranges_[2], ranges_[3]);
 }
@@ -115,9 +124,9 @@ void Figure::save(const char* file)
   // using SubPlot because otherwise there are large margins -> SubPlot removes these margins
   // However if there is a ylabel we need the margin on the left, thats what "<" is for
   if (ylabelActive_)
-    gr_.SubPlot(1,1,0,"<_");
+    gr_.SubPlot(1,1,0,"<^_");
   else
-    gr_.SubPlot(1,1,0,"_");
+    gr_.SubPlot(1,1,0,"^_");
 
   if (grid_)
     gr_.Grid(gridType_.c_str() , gridCol_.c_str());
