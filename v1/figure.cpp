@@ -14,6 +14,7 @@ Figure::Figure()
     gridCol_("h"), 
     initRanges_(true),
     autoRanges_(true),
+    ylogScale_(false),
     fontSizePT_(8),
     xd_(std::vector<mglData>()), 
     yd_(std::vector<mglData>()), 
@@ -99,7 +100,14 @@ void Figure::setRanges(const mglData& xd, const mglData& yd)
   const double xTot = xMax - xMin;
   const double yTot = yMax - yMin;
   // width/height of additional margin (in percentage) of the total width/height
-  const double vertMargin = 0.1; // margin top and bottom
+  double vertMargin;
+  if (ylogScale_){
+    // if vertMargin would be > 0, we may set the lower yrange to 0 or even < 0 which is not allowed in logscales
+    vertMargin = 0.0; 
+  }
+  else {
+    vertMargin = 0.1; // margin top and bottom
+  }
   const double horizMargin = 0.0; // margin left and right
 
   if (initRanges_) { // ranges have not been set yet, so set it according to data
@@ -148,14 +156,20 @@ void Figure::save(const char* file)
  * POST: linear, semilogx, semilogy or loglog scale according to bools logx and logy */
 void Figure::setlog(const bool logx, const bool logy)
 {
-  if (logx && logy)
+  if (logx && logy){
     gr_.SetFunc("lg(x)","lg(y)");
-  else if (logx && !logy)
+    ylogScale_ = true;
+  }
+  else if (logx && !logy){
     gr_.SetFunc("lg(x)","");
-  else if (!logx && logy)
+  }
+  else if (!logx && logy){
     gr_.SetFunc("","lg(y)");
-  else
+    ylogScale_ = true;
+  }
+  else {
     gr_.SetFunc("","");
+  }
 }
 
 /* setting title

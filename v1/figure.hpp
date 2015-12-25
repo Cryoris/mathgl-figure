@@ -28,6 +28,7 @@ class Figure {
     double ranges_[4]; // axis ranges
     bool initRanges_; // have the ranges been set yet?
     bool autoRanges_; // auto ranges or ranges as the user set them?
+    bool ylogScale_; // is the y Axis in logarithmic scale? needed for range margin
     double fontSizePT_; // font size in PT
     std::vector<mglData> xd_, yd_; // vector of plot data
     std::vector<std::string> styles_; // vector of plot styles 
