@@ -40,8 +40,9 @@ class Figure {
 template <typename Vector> // same syntax for Eigen::VectorXd and std::vector<T>
 void Figure::plot(const Vector& x, const Vector& y, const char* style, const char* legend)
 {
-  if (x.size() != y.size())
+  if (x.size() != y.size()){
     throw std::length_error("In function Figure::plot(): Vectors must have same sizes!");
+  }
 
   mglData xd(x.data(), x.size()),
           yd(y.data(), y.size());
@@ -51,6 +52,7 @@ void Figure::plot(const Vector& x, const Vector& y, const char* style, const cha
   yd_.push_back(yd);
   styles_.push_back(style);
   
-  if (legend != 0)
+  if (legend != 0){
     gr_.AddLegend(legend, style);
+  }
 }
