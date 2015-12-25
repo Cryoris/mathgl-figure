@@ -21,14 +21,14 @@ class Figure {
     mglGraph gr_; // graph in which the plots will be saved
     bool axis_; // plot axis?
     bool grid_; // plot grid?
-    bool legend_; // plot legend?
-    bool ylabelActive_; // is there a y-label? necessary for layout, see figure.cpp
+    bool legend_; // plot legend
     std::pair<double, double> legendPos_; // legend position
     std::string gridType_; // grid type
     std::string gridCol_; // grid color
     double ranges_[4]; // axis ranges
     bool initRanges_; // have the ranges been set yet?
     bool autoRanges_; // auto ranges or ranges as the user set them?
+    double fontSizePT_; // font size in PT
     std::vector<mglData> xd_, yd_; // vector of plot data
     std::vector<std::string> styles_; // vector of plot styles 
 };

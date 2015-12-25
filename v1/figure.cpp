@@ -1,4 +1,6 @@
 # include <iostream>
+# include <sstream> // needed for title layout
+# include <cstring> // needed for length of const char* 
 # include "figure.hpp"
 
 /* constructor: set default style
@@ -8,19 +10,21 @@ Figure::Figure()
   : axis_(true), 
     grid_(true), 
     legend_(false), 
-    ylabelActive_(false),
     gridType_(""), 
     gridCol_("h"), 
     initRanges_(true),
     autoRanges_(true),
+    fontSizePT_(8),
     xd_(std::vector<mglData>()), 
     yd_(std::vector<mglData>()), 
     styles_(std::vector<std::string>())
 {
-  mglGraph gr_;
-  gr_.SetFontSizePT(7);
+  gr_.SubPlot(1,1,0,"_");
+  gr_.LoadFont("heros");
+  gr_.SetFontSizePT(fontSizePT_);
   ranges_[0] = 1; ranges_[1] = 1; ranges_[2] = 1; ranges_[3] = 1;
 };
+
 
 /* change grid settings 
  * PRE : - 
@@ -49,9 +53,12 @@ void Figure::xlabel(const char* label, const double pos)
   gr_.Label('x', label, pos);
 }
 
+/* setting y-axis label
+ * PRE : -
+ * POST: ylabel initialized with given position */
 void Figure::ylabel(const char* label, const double pos)
 {
-  ylabelActive_ = true;
+  gr_.SubPlot(1,1,0,"<_");
   gr_.Label('y', label, pos);
 }
 
@@ -120,14 +127,7 @@ void Figure::setRanges(const mglData& xd, const mglData& yd)
  * POST: write figure to 'file' in eps-format */
 void Figure::save(const char* file)
 {
-  // setting everything:
-  // using SubPlot because otherwise there are large margins -> SubPlot removes these margins
-  // However if there is a ylabel we need the margin on the left, thats what "<" is for
-  if (ylabelActive_)
-    gr_.SubPlot(1,1,0,"<^_");
-  else
-    gr_.SubPlot(1,1,0,"^_");
-
+  // setting grid and axis (must be done in the end when final ranges are known)
   if (grid_)
     gr_.Grid(gridType_.c_str() , gridCol_.c_str());
   if (axis_)
@@ -158,7 +158,12 @@ void Figure::setlog(const bool logx, const bool logy)
     gr_.SetFunc("","");
 }
 
+/* setting title
+ * PRE : -
+ * POST: title_ variable set to 'text' with small-font option ("@") */
 void Figure::title(const char* text)
 {
-  gr_.Title(text);
+  std::stringstream ss;
+  ss << "@{" << text << "}";
+  gr_.Title(ss.str().c_str());
 }
