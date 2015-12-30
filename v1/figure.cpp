@@ -1,5 +1,4 @@
 # include <iostream>
-# include <sstream> // needed for title layout
 # include <cstring> // needed for length of const char* 
 # include <limits>
 # include "figure.hpp"
@@ -41,12 +40,12 @@ void Figure::grid(const bool on, const char* gridType, const char* gridCol)
     grid_ = false;
   
   if (gridType == 0)
-    gridType_ = '-';
+    gridType_ = "-";
   else
     gridType_ = *gridType;
 
   if (gridCol == 0)
-    gridCol_ = 'h';
+    gridCol_ = "h";
   else
     gridCol_ = *gridCol;
 }
@@ -176,6 +175,10 @@ void Figure::save(const char* file)
  * POST: linear, semilogx, semilogy or loglog scale according to bools logx and logy */
 void Figure::setlog(const bool logx, const bool logy)
 {
+  if (xd_.size() != 0){
+    std::cout << "* Figure - Warning * setlog should be called before a plot function is called!\n";
+  }
+
   if (logx && logy){
     gr_.SetFunc("lg(x)","lg(y)");
     ylogScale_ = true;
