@@ -7,7 +7,7 @@ class Figure {
   public:
     Figure();
     void setRanges(const mglData& xd, const mglData& yd);
-    void grid(const bool on = true, const char* gridType = 0, const char* gridCol = 0);
+    void grid(const bool on = true, const std::string gridType = "-", const std::string gridCol = "h");
     void xlabel(const char* label, const double pos = 0);
     void ylabel(const char* label, const double pos = 0);
     void legend(const double xPos = 1, const double yPos = 1);
@@ -40,9 +40,8 @@ class Figure {
 template <typename Vector> // same syntax for Eigen::VectorXd and std::vector<T>
 void Figure::plot(const Vector& x, const Vector& y, const char* style, const char* legend)
 {
-  if (x.size() != y.size()){
+  if (x.size() != y.size())
     throw std::length_error("In function Figure::plot(): Vectors must have same sizes!");
-  }
 
   mglData xd(x.data(), x.size()),
           yd(y.data(), y.size());
@@ -52,7 +51,6 @@ void Figure::plot(const Vector& x, const Vector& y, const char* style, const cha
   yd_.push_back(yd);
   styles_.push_back(style);
   
-  if (legend != 0){
+  if (legend != 0)
     gr_.AddLegend(legend, style);
-  }
 }

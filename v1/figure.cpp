@@ -1,6 +1,6 @@
 # include <iostream>
+# include <sstream> // needed for title layout
 # include <cstring> // needed for length of const char* 
-# include <limits>
 # include "figure.hpp"
 
 /* constructor: set default style
@@ -32,22 +32,15 @@ Figure::Figure()
  * PRE : - 
  * POST: No grid if on is false, grid style is gridType, grid color is gridCol.
  *       For those arguments which are not given default settings are used. */
-void Figure::grid(const bool on, const char* gridType, const char* gridCol)
+void Figure::grid(const bool on, const std::string gridType, const std::string gridCol)
 {
   if (on)
     grid_ = true;
   else 
     grid_ = false;
   
-  if (gridType == 0)
-    gridType_ = "-";
-  else
-    gridType_ = *gridType;
-
-  if (gridCol == 0)
-    gridCol_ = "h";
-  else
-    gridCol_ = *gridCol;
+  gridType_ = gridType;
+  gridCol_ = gridCol;
 }
 
 void Figure::xlabel(const char* label, const double pos)
@@ -62,10 +55,6 @@ void Figure::ylabel(const char* label, const double pos)
 {
   gr_.SubPlot(1,1,0,"<_");
   gr_.Label('y', label, pos);
-
-  if (ylogScale_){
-    std::cout << "* Figure - Warning * It would be better to call ylabel before setting logscales!\n";
-  }
 }
 
 /* set or unset legend
@@ -74,7 +63,7 @@ void Figure::ylabel(const char* label, const double pos)
 void Figure::legend(const double xPos, const double yPos)
 {
   if (std::abs(xPos) > 2 || std::abs(yPos) > 2)
-    std::cout << "* Figure - Warning * Legend may be out of the graphic due to large xPos or yPos\n";
+    std::cout << "\n * Warning * Legend may be out of the graphic due to large xPos or yPos\n";
   legend_ = true;
   legendPos_ = std::pair<double, double>(xPos, yPos);
 }
@@ -102,50 +91,36 @@ void Figure::setRanges(const mglData& xd, const mglData& yd)
   const double xMin(xd.Minimal()), xMax(xd.Maximal()),
                yMin(yd.Minimal()), yMax(yd.Maximal());
 
+  const double xTot = xMax - xMin;
   const double yTot = yMax - yMin;
-
   // width/height of additional margin (in percentage) of the total width/height
-  const double vertMargin = 0.1; // margin top and bottom
+  double vertMargin;
+  if (ylogScale_){
+    // if vertMargin would be > 0, we may set the lower yrange to 0 or even < 0 which is not allowed in logscales
+    vertMargin = 0.0; 
+  }
+  else {
+    vertMargin = 0.1; // margin top and bottom
+  }
+  const double horizMargin = 0.0; // margin left and right
 
   if (initRanges_) { // ranges have not been set yet, so set it according to data
-    ranges_[0] = xMin; 
-    ranges_[1] = xMax; 
-    if (ylogScale_){
-      ranges_[2] = yMin/2;
-      ranges_[3] = yMax*2;
-    }
-    else {
-      ranges_[2] = yMin - vertMargin*yTot; 
-      ranges_[3] = yMax + vertMargin*yTot;
-    }
+    ranges_[0] = xMin - horizMargin*xTot; 
+    ranges_[1] = xMax + horizMargin*xTot; 
+    ranges_[2] = yMin - vertMargin*yTot; 
+    ranges_[3] = yMax + vertMargin*yTot;
     initRanges_ = false;
   }
   else { // check in which directions ranges have to be extended
-    if (ranges_[0] > xMin){
-      ranges_[0] = xMin; 
-    }
-    if (ranges_[1] < xMax){
-      ranges_[1] = xMax; 
-    }
-    if (ranges_[2] > yMin){
-      if (ylogScale_){
-        ranges_[2] = yMin/2;
-      }
-      else {
-        ranges_[2] = yMin - vertMargin*yTot; 
-      }
-    }
-    if (ranges_[3] < yMax){
-      if (ylogScale_){
-        ranges_[3] = yMax*2; 
-      }
-      else {
-        ranges_[3] = yMax + vertMargin*yTot; 
-      }
-    }
+    if (ranges_[0] > xMin)
+      ranges_[0] = xMin - horizMargin*xTot; 
+    if (ranges_[1] < xMax)
+      ranges_[1] = xMax + horizMargin*xTot; 
+    if (ranges_[2] > yMin)
+      ranges_[2] = yMin - vertMargin*yTot; 
+    if (ranges_[3] < yMax)
+      ranges_[3] = yMax + vertMargin*yTot; 
   }
- // std::cout << "Setting ranges to x = [" << ranges_[0] << ", " << ranges_[1] << "]\n"
- //           << "                  y = [" << ranges_[2] << ", " << ranges_[3] << "]\n";
   gr_.SetRanges(ranges_[0], ranges_[1], ranges_[2], ranges_[3]);
 }
 
@@ -175,10 +150,6 @@ void Figure::save(const char* file)
  * POST: linear, semilogx, semilogy or loglog scale according to bools logx and logy */
 void Figure::setlog(const bool logx, const bool logy)
 {
-  if (xd_.size() != 0){
-    std::cout << "* Figure - Warning * setlog should be called before a plot function is called!\n";
-  }
-
   if (logx && logy){
     gr_.SetFunc("lg(x)","lg(y)");
     ylogScale_ = true;
