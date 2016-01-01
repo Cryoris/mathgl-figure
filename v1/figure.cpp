@@ -45,6 +45,9 @@ void Figure::grid(const bool on, const std::string gridType, const std::string g
 
 void Figure::xlabel(const char* label, const double pos)
 {
+  if (xlogScale_){
+    std::cout << "* Figure - Warning * for better text-alignment, xlabel should be called before setlog\n";
+  }
   gr_.Label('x', label, pos);
 }
 
@@ -53,6 +56,9 @@ void Figure::xlabel(const char* label, const double pos)
  * POST: ylabel initialized with given position */
 void Figure::ylabel(const char* label, const double pos)
 {
+  if (ylogScale_){
+    std::cout << "* Figure - Warning * for better text-alignment, ylabel should be called before setlog\n";
+  }
   gr_.SubPlot(1,1,0,"<_");
   gr_.Label('y', label, pos);
 }
@@ -62,8 +68,9 @@ void Figure::ylabel(const char* label, const double pos)
  * POST: if on is true legend will be plotted, otherwise not */
 void Figure::legend(const double xPos, const double yPos)
 {
-  if (std::abs(xPos) > 2 || std::abs(yPos) > 2)
-    std::cout << "\n * Warning * Legend may be out of the graphic due to large xPos or yPos\n";
+  if (std::abs(xPos) > 2 || std::abs(yPos) > 2){
+    std::cout << "* Figure - Warning * Legend may be out of the graphic due to large xPos or yPos\n";
+  }
   legend_ = true;
   legendPos_ = std::pair<double, double>(xPos, yPos);
 }
@@ -152,10 +159,12 @@ void Figure::setlog(const bool logx, const bool logy)
 {
   if (logx && logy){
     gr_.SetFunc("lg(x)","lg(y)");
+    xlogScale_ = true;
     ylogScale_ = true;
   }
   else if (logx && !logy){
     gr_.SetFunc("lg(x)","");
+    xlogScale_ = true;
   }
   else if (!logx && logy){
     gr_.SetFunc("","lg(y)");
