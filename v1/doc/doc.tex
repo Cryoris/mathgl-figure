@@ -3,6 +3,10 @@
 \usepackage[T1]{fontenc}
 \usepackage[left=3cm, right=3cm]{geometry}
 \usepackage{listings}
+\usepackage{latexsym}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{wasysym}
 \usepackage[dvipsnames]{xcolor}
 
 \newcommand{\definition}[1]{ \begin{lstlisting}{#1}\end{lstlisting} }
@@ -200,6 +204,60 @@ void save( const char* file )
 \begin{lstlisting}
 void title( const char* text )
 \end{lstlisting}
+
+\section{Line characteristics}
+
+\begin{minipage}{3cm}
+  Linecolors\footnote{
+  Upper-case letters will give a darker version of the lower-case version.
+  }:\\ \\
+  \begin{tabular}{l|c}
+    \textcolor{blue}{blue} & \texttt{b} \\
+    \textcolor{green}{green} & \texttt{g} \\
+    \textcolor{red}{red} & \texttt{r} \\
+    \textcolor{cyan}{cyan} & \texttt{c} \\
+    \textcolor{magenta}{magenta} & \texttt{m} \\
+    \textcolor{yellow}{yellow} & \texttt{y} \\
+    \textcolor[gray]{0.5}{gray} & \texttt{h} \\
+    \textcolor{SeaGreen}{green-blue} & \texttt{l} \\
+    \textcolor{RoyalBlue}{sky-blue} & \texttt{n} \\
+    \textcolor{orange}{orange} & \texttt{q} \\
+    \textcolor{LimeGreen}{green-yellow} & \texttt{e} \\
+    \textcolor{CadetBlue}{blue-violet} & \texttt{u} \\
+    \textcolor{purple}{purple} & \texttt{p}
+  \end{tabular}
+\end{minipage}
+\hfill
+\begin{minipage}{3cm}
+  Linestyles:\\ \\
+  \begin{tabular}{l|c}
+    solid & \texttt{-} \\
+    dashed & \texttt{;} \\
+    small dashed & \texttt{=} \\
+    long dashed & \texttt{|} \\
+    dotted & \texttt{:} \\
+    dash-dotted & \texttt{j} \\
+    small dash-dotted & \texttt{i} 
+  \end{tabular}
+\end{minipage}
+\hfill
+\begin{minipage}{3cm}
+  Linemarkers:\\ \\
+  \begin{tabular}{l|c}
+    + & \texttt{+} \\
+    o & \texttt{o} \\
+    $\diamond$ & \texttt{d} \\
+    $\cdot$ & \texttt{.} \\
+    $\triangle$ & \texttt{\^{}} \\
+    $\nabla$ &\texttt{v} \\
+    $\lhd$ & \texttt{<} \\
+    $\rhd$ & \texttt{>} \\
+    $\odot$ & \texttt{\#.} \\
+    $\boxplus$ & \texttt{\#+} \\
+    $\boxtimes$ & \texttt{\#x} 
+  \end{tabular}
+\end{minipage}
+
 
 
 \end{document}
