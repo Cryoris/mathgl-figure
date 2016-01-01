@@ -5,6 +5,7 @@
 \usepackage{listings}
 \usepackage{latexsym}
 \usepackage{amsfonts}
+\usepackage{hyperref}
 \usepackage{amssymb}
 \usepackage{wasysym}
 \usepackage[dvipsnames]{xcolor}
@@ -28,6 +29,22 @@
 \begin{document}
 
 \section{Installation}
+
+Follow the steps in the \texttt{INSTALL} file. \\
+In the directory of the \texttt{CMakeLists.txt} do: \\ \\
+Under Linux/Mac OS: \\
+\texttt{
+\indent   \$ mkdir build \\
+\indent   \$ cd build \\
+\indent   \$ cmake .. \\
+\indent   \$ sudo make install \\ \\
+}
+Under Windows: \\
+\indent    - open a terminal with administrator rights \\
+\indent    - do the same as above but without the \texttt{sudo} \\ \\
+%
+This installation requires CMake (\url{https://cmake.org/download/}). 
+
 
 \section{Commands}
 
