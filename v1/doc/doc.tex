@@ -5,14 +5,13 @@
 \usepackage{listings}
 \usepackage{latexsym}
 \usepackage{amsfonts}
-\usepackage{hyperref}
+\usepackage[hidelinks]{hyperref}
 \usepackage{amssymb}
 \usepackage{wasysym}
 \usepackage[dvipsnames]{xcolor}
 
-\newcommand{\definition}[1]{ \begin{lstlisting}{#1}\end{lstlisting} }
 \newcommand{\command}[1]{\subsection{#1}}
-%\newcommand{\definition}[1]{\texttt{#1}}
+
 
 \lstset{
   language=C++,
@@ -26,7 +25,18 @@
   emphstyle=[1]{\color{blue}},
 }
 
+
 \begin{document}
+
+\begin{center}
+  \begin{huge}
+    \textbf{The Figure Class\\}
+  \end{huge}
+  Basic plotting in C++
+\end{center}
+  
+
+\tableofcontents
 
 \section{Installation}
 
@@ -44,6 +54,7 @@ Under Windows: \\
 \indent    - do the same as above but without the \texttt{sudo} \\ \\
 %
 This installation requires CMake (\url{https://cmake.org/download/}). 
+The ``manual'' way of installing it is described in \texttt{INSTALL}.
 
 
 \section{Commands}
@@ -58,6 +69,19 @@ void grid( const bool on = true,
 \end{lstlisting}
 %
 \textbf{Restricitons:} None.
+%
+\textbf{Examples:}
+\begin{lstlisting}
+  Figure fig;
+  fig.plot(x, y, "r");
+  fig.grid(false); // unset grid
+  fig.save("plot.eps");
+
+  Figure fig;
+  fig.plot(x, y, "r");
+  fig.grid(true, "!", "b"); // blue fine mesh
+  fig.save("plot.eps");
+\end{lstlisting}
 
 \command{xlabel}
 
@@ -75,15 +99,13 @@ void xlabel( const char* label,
   fig.plot(x, y, "+g"); // '+g' equals matlab/python '+-g'
   fig.xlabel("Linear x axis");
   fig.save("plot.eps");
-\end{lstlisting}
-\begin{lstlisting}
+
   Figure fig;
   fig.setlog(true, true);
   fig.plot(x, y, "+g");
   fig.xlabel("Logarithmic x axis"); // Not good - should be called before 'setlog'
   fig.save("plot.eps");
-\end{lstlisting}
-\begin{lstlisting}
+
   Figure fig;
   fig.xlabel("Logarithmix x axis"); // Good
   fig.setlog(true, true);
@@ -133,8 +155,7 @@ void setlog( const bool logx = true,
   fig.setlog(true, true); // -> loglog
   fig.plot(x2, y2, "g");
   fig.save("plot.eps"); // ATTENTION: all plots will have been plotted in loglog-scale 
-\end{lstlisting}
-\begin{lstlisting}
+
   Figure fig;
   fig.plot(x, y, "b");
   fig.save("plot.eps"); // -> default (= linear) scaling
@@ -189,11 +210,15 @@ void ranges( const double xMin,
   Figure fig;
   fig.ranges(-1,1,-1,1);
   fig.plot(x, y, "b");
-\end{lstlisting}
-\begin{lstlisting}
+
   Figure fig;
   fig.plot(x, y, "b");
   fig.ranges(0, 2.3, 4, 5); // ranges can be called before or after 'plot'
+
+  Figure fig;
+  fig.ranges(-1, 1, 0, 5);
+  fig.setlog(true, true); // will run but MathGL will throw a warning 
+  fig.plot(x, y, "b");
 \end{lstlisting}
 
 \command{save}
@@ -221,6 +246,8 @@ void save( const char* file )
 \begin{lstlisting}
 void title( const char* text )
 \end{lstlisting}
+%
+\textbf{Restricitons:} None.
 
 \section{Line characteristics}
 
@@ -245,9 +272,10 @@ void title( const char* text )
   \end{tabular}
 \end{minipage}
 \hfill
-\begin{minipage}{3cm}
+\begin{minipage}{4cm}
   Linestyles:\\ \\
   \begin{tabular}{l|c}
+    none & \\
     solid & \texttt{-} \\
     dashed & \texttt{;} \\
     small dashed & \texttt{=} \\
@@ -256,9 +284,11 @@ void title( const char* text )
     dash-dotted & \texttt{j} \\
     small dash-dotted & \texttt{i} 
   \end{tabular}
+  None is used as follows: \\
+  \texttt{" r*"} gives red stars w/o any lines
 \end{minipage}
 \hfill
-\begin{minipage}{3cm}
+\begin{minipage}{2cm}
   Linemarkers:\\ \\
   \begin{tabular}{l|c}
     + & \texttt{+} \\
