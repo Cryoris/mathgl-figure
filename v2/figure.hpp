@@ -59,30 +59,26 @@ void Figure::plot(const xVector& x, const yVector& y, const std::string style, c
     throw std::length_error("In function Figure::plot(): Vectors must have same sizes!");
   }
 
-#if 0 // safeguard, not sure if to implement it - probably as settable option
-  if (xlogScale_){
-    auto xit = x.data();
-    for (unsigned int i = 0; i < x.size(); ++i){
-      if (*(xit + i) == 0){
-        *(xit + i) = std::numeric_limits<double>::epsilon();
-      }
-    }
-  }
-  if (ylogScale_){
-    auto yit = x.data();
-    for (unsigned int i = 0; i < x.size(); ++i){
-      if (*(yit + i) == 0){
-        *(yit + i) = std::numeric_limits<double>::epsilon();
-      }
-    }
-  }
-#endif
-
-
-
   mglData xd(x.data(), x.size()),
           yd(y.data(), y.size());
-  
+
+ #if 1 // safeguard, not sure if to implement it - probably as settable option
+    if (xlogScale_){
+      for (unsigned int i = 0; i < x.size(); ++i){
+        if (xd.a[i] == 0){
+          xd.a[i] = std::numeric_limits<double>::epsilon();
+        }
+      }
+    }
+    if (ylogScale_){
+      for (unsigned int i = 0; i < y.size(); ++i){
+        if (yd.a[i] == 0){
+          yd.a[i] = std::numeric_limits<double>::epsilon();
+        }
+      }
+    }
+#endif
+ 
   setRanges(xd, yd);
   xd_.push_back(xd);
   yd_.push_back(yd);

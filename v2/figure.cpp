@@ -145,15 +145,6 @@ void Figure::setRanges(const mglData& xd, const mglData& yd)
   gr_.SetRanges(ranges_[0], ranges_[1], ranges_[2], ranges_[3]);
 }
 
-void replaceZeros(mglData& data)
-{
-  for (long i = 0; i < data.GetNx(); ++i){
-    if (data.a[i] == 0){
-      data.a[i] = std::numeric_limits<double>::epsilon();
-    }
-  }
-}
-
 /* save figure
  * PRE : file must have '.eps' ending
  * POST: write figure to 'file' in eps-format */
@@ -168,16 +159,7 @@ void Figure::save(const char* file)
     gr_.Legend(legendPos_.first, legendPos_.second);
 
   // plotting
-  const bool safeguard = false;
   for (std::size_t i = 0; i < xd_.size(); ++i){
-    if (safeguard){
-      if (xlogScale_){
-        replaceZeros(xd_);
-      }
-      if (ylogScale_){
-        replaceZeros(yd_);
-      }
-    }
     gr_.Plot(xd_[i], yd_[i], styles_[i].c_str());
   }
   for (std::size_t j = 0; j < fplots_.size(); ++j){
