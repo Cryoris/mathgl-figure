@@ -15,7 +15,7 @@ class Figure {
     void legend(const double xPos = 1, const double yPos = 1);
     template <typename yVector> void plot(const yVector& y, const std::string style, const char* legend = 0);
     template <typename xVector, typename yVector> void plot(const xVector& x, const yVector& y, const std::string style, const char* legend = 0);
-    template <typename xVector, typename yVector, typename zVector> void plot(const xVector& x, const yVector& y, const zVector& z, const std::string style, const char* legend = 0);
+    template <typename xVector, typename yVector, typename zVector> void plot3(const xVector& x, const yVector& y, const zVector& z, const std::string style, const char* legend = 0);
     void fplot(const std::string function, const std::string style, const char* legend = 0);
     void ranges(const double xMin, const double xMax, const double yMin, const double yMax);
     void setlog(const bool logx = true, const bool logy = true);
@@ -59,10 +59,8 @@ void Figure::plot(const yVector& y, const std::string style, const char* legend)
 template <typename xVector, typename yVector> // same syntax for Eigen::VectorXd and std::vector<T>
 void Figure::plot(const xVector& x, const yVector& y, const std::string style, const char* legend)
 {
-  std::cout << "Called plot2d with: " << x.size() << " " << y.size() << "\n";
   if (x.size() != y.size()){
-    //throw std::length_error("In function Figure::plot(): Vectors must have same sizes!");
-    std::cout << "Vectors must have same sizes dude.\n";
+    throw std::length_error("In function Figure::plot(): Vectors must have same sizes!");
   }
 
   mglData xd(x.data(), x.size()),
@@ -85,7 +83,7 @@ void Figure::plot(const xVector& x, const yVector& y, const std::string style, c
 }
 /*
 template <typename xVector, typename yVector, typename zVector> 
-void Figure::plot(const xVector& x, const yVector& y, const zVector& z, const std::string style, const char* legend)
+void Figure::plot3(const xVector& x, const yVector& y, const zVector& z, const std::string style, const char* legend)
 {
   std::cout << "Called plot3d with: " << x.size() << " " << y.size() << " " << z.size() << "\n";
   if (!(x.size() == y.size() == z.size())){

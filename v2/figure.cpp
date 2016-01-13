@@ -19,14 +19,18 @@ Figure::Figure()
   : axis_(true), 
     grid_(true), 
     legend_(false), 
+    legendPos_(std::pair<double, double>(1,1)),
     gridType_(""), 
     gridCol_("h"), 
     initRanges_(true),
     autoRanges_(true),
+    xlogScale_(false),
     ylogScale_(false),
     fontSizePT_(8),
+    plotKind_(std::vector<PlotType>()),
     xd_(std::vector<mglData>()), 
     yd_(std::vector<mglData>()), 
+    zd_(std::vector<mglData>()),
     styles_(std::vector<std::string>())
 {
   gr_.SubPlot(1,1,0,"_");
