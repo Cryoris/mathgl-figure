@@ -7,7 +7,7 @@
 cmake_minimum_required(VERSION 2.8)
 project(FigureClass)
 
-add_definitions(-Wall)
+add_definitions(-Wall -std=gnu++11 -fext-numeric-literals)
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../modules)
 find_package(Eigen3 REQUIRED)
@@ -19,7 +19,7 @@ include_directories(${MATHGL2_INCLUDE_DIRS})
 add_library(Figure STATIC ${CMAKE_CURRENT_SOURCE_DIR}/../figure.cpp)
 target_link_libraries(Figure ${MATHGL2_LIBRARIES})
 
-install(TARGETS Figure 
+install(TARGETS Figure
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../figure.hpp DESTINATION include)
