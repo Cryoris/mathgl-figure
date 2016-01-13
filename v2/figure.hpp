@@ -1,5 +1,6 @@
 # pragma once
 
+# include <iostream>
 # include <Eigen/Dense>
 # include <mgl2/mgl.h>
 # include <utility>
@@ -14,6 +15,7 @@ class Figure {
     void legend(const double xPos = 1, const double yPos = 1);
     template <typename yVector> void plot(const yVector& y, const std::string style, const char* legend = 0);
     template <typename xVector, typename yVector> void plot(const xVector& x, const yVector& y, const std::string style, const char* legend = 0);
+    template <typename xVector, typename yVector, typename zVector> void plot(const xVector& x, const yVector& y, const zVector& z, const std::string style, const char* legend = 0);
     void fplot(const std::string function, const std::string style, const char* legend = 0);
     void ranges(const double xMin, const double xMax, const double yMin, const double yMax);
     void setlog(const bool logx = true, const bool logy = true);
@@ -21,6 +23,7 @@ class Figure {
     void title(const char* text);
 
   private:
+    enum PlotType { plot2d, plot3d, plotf };
     mglGraph gr_; // graph in which the plots will be saved
     bool axis_; // plot axis?
     bool grid_; // plot grid?
@@ -34,9 +37,10 @@ class Figure {
     bool xlogScale_; // needed for warning in xlabel
     bool ylogScale_; // is the y Axis in logarithmic scale? needed for range margin and warning in ylabel
     double fontSizePT_; // font size in PT
-    std::vector<mglData> xd_, yd_; // vector of plot data
+    std::vector<PlotType> plotKind_;
+    std::vector<mglData> xd_, yd_, zd_; // vector of plot data
     std::vector<std::string> fplots_; // vector of fplot functions
-    std::vector<std::string> styles_, fstyles_; // vector of plot styles 
+    std::vector<std::string> styles_; // vector of plot styles 
 };
 
 /* plot y data 
@@ -55,36 +59,63 @@ void Figure::plot(const yVector& y, const std::string style, const char* legend)
 template <typename xVector, typename yVector> // same syntax for Eigen::VectorXd and std::vector<T>
 void Figure::plot(const xVector& x, const yVector& y, const std::string style, const char* legend)
 {
+  std::cout << "Called plot2d with: " << x.size() << " " << y.size() << "\n";
   if (x.size() != y.size()){
-    throw std::length_error("In function Figure::plot(): Vectors must have same sizes!");
+    //throw std::length_error("In function Figure::plot(): Vectors must have same sizes!");
+    std::cout << "Vectors must have same sizes dude.\n";
   }
 
   mglData xd(x.data(), x.size()),
           yd(y.data(), y.size());
 
- #if 1 // safeguard, not sure if to implement it - probably as settable option
-    if (xlogScale_){
-      for (unsigned int i = 0; i < x.size(); ++i){
-        if (xd.a[i] == 0){
-          xd.a[i] = std::numeric_limits<double>::epsilon();
-        }
-      }
-    }
-    if (ylogScale_){
-      for (unsigned int i = 0; i < y.size(); ++i){
-        if (yd.a[i] == 0){
-          yd.a[i] = std::numeric_limits<double>::epsilon();
-        }
-      }
-    }
-#endif
- 
   setRanges(xd, yd);
+  // put plot data in queue
   xd_.push_back(xd);
   yd_.push_back(yd);
+
+  // put plot style in queue
   styles_.push_back(style);
+
+  // save what kind of plot we're drawing
+  plotKind_.push_back(plot2d);
   
   if (legend != 0){
     gr_.AddLegend(legend, style.c_str());
   }
 }
+/*
+template <typename xVector, typename yVector, typename zVector> 
+void Figure::plot(const xVector& x, const yVector& y, const zVector& z, const std::string style, const char* legend)
+{
+  std::cout << "Called plot3d with: " << x.size() << " " << y.size() << " " << z.size() << "\n";
+  if (!(x.size() == y.size() == z.size())){
+      throw std::length_error("In function Figure::plot(): Vectors must have same sizes!");
+  }
+
+  mglData xd(x.data(), x.size()),
+          yd(y.data(), y.size()),
+          zd(z.data(), z.size());
+
+  // set ranges
+  // setRanges(xd, yd, zd);
+  // push back
+  xd_.push_back(xd);
+  yd_.push_back(yd);
+  zd_.push_back(zd);
+  
+  // put plot style in queue
+  styles_.push_back(style);
+
+  // save plot type
+  plotKind_.push_back(plot3d);
+
+  // add legend?
+  if (legend != 0){
+    gr_.AddLegend(legend, style.c_str());
+  }
+}
+
+*/
+
+
+

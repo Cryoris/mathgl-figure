@@ -4,6 +4,14 @@
 # include <cstring> // needed for length of const char* 
 # include "figure.hpp"
 
+void print(const mglData& d)
+{
+  for (long i = 0; i < d.GetNx(); ++i){
+    std::cout << d.a[i] << " ";
+  }
+  std::cout << "\n";
+}
+
 /* constructor: set default style
  * PRE : pointer to mglGraph will not cease to exist until operations are performed on this Figure
  * POST: Axis is true -- Grid is true and in light grey -- Legend is false -- Ranges will be set automatically */
@@ -83,7 +91,7 @@ void Figure::legend(const double xPos, const double yPos)
 void Figure::fplot(const std::string function, const std::string style, const char* legend)
 {
   fplots_.push_back(function);
-  fstyles_.push_back(style);
+  styles_.push_back(style);
   if (legend != 0){
     gr_.AddLegend(legend, style.c_str());
   }
@@ -109,8 +117,39 @@ void Figure::setRanges(const mglData& xd, const mglData& yd)
   if (!autoRanges_)
     return;
 
-  const double xMin(xd.Minimal()), xMax(xd.Maximal()),
-               yMin(yd.Minimal()), yMax(yd.Maximal());
+  const double xMax(xd.Maximal()),
+               yMax(yd.Maximal());
+  double xMin(xd.Minimal()),
+         yMin(yd.Minimal());
+  const long N = xd.GetNx();
+
+  // if logscaling is active and some values are 0 or negative we must make sure that the range still is positive
+  // -> x(or y)Min = smallest strictly positive value of x(or y)
+  std::function<bool(double)> isNegative = [](double x){ return x <= 0 ? true : false; }; 
+  if (xlogScale_){
+    if (xMax <= 0){
+      throw std::range_error("In function Figure::setRanges() : Invalid ranges for logscaled plot - maximal x-value must be greater than 0.");
+    }
+    if (&xd.a[N] != std::find_if(&xd.a[0], &xd.a[N], isNegative)){
+      std::cout << "* Figure - Warning * non-positive values of x data will not appear on plot. \n";
+    }
+    std::vector<double> buffer(N, xMax);
+    mglData xdPositive(buffer.data(), buffer.size());
+    std::remove_copy_if(&xd.a[0], &xd.a[N], &xdPositive.a[0], isNegative);
+    xMin = xdPositive.Minimal();
+  }
+  if (ylogScale_){
+    if (yMax <= 0){
+      throw std::range_error("In function Figure::setRanges() : Invalid ranges for logscaled plot - maximal y-value must be greater than 0.");
+    }
+    if (&yd.a[N] != std::find_if(&yd.a[0], &yd.a[N], isNegative)){
+      std::cout << "* Figure - Warning * non-positive values of y data will not appear on plot. \n";
+    }
+    std::vector<double> buffer(N, yMax);
+    mglData ydPositive(buffer.data(), buffer.size());
+    std::remove_copy_if(&yd.a[0], &yd.a[N], &ydPositive.a[0], isNegative);
+    yMin = ydPositive.Minimal();
+  }
 
   const double xTot = xMax - xMin;
   const double yTot = yMax - yMin;
@@ -150,22 +189,51 @@ void Figure::setRanges(const mglData& xd, const mglData& yd)
  * POST: write figure to 'file' in eps-format */
 void Figure::save(const char* file)
 {
+  if (zd_.size() > 0){ // we are dealing with a 3d plot -> set the Box
+    gr_.Box();
+    gr_.Rotate(40, 60);
+  }
   // setting grid and axis (must be done in the end when final ranges are known)
-  if (grid_)
+  if (grid_){
     gr_.Grid(gridType_.c_str() , gridCol_.c_str());
-  if (axis_)
+  }
+  if (axis_){
     gr_.Axis();
-  if (legend_)
+  }
+  if (legend_){
     gr_.Legend(legendPos_.first, legendPos_.second);
+  }
 
   // plotting
+  unsigned xIt(0), yIt(0), zIt(0), // x,y,z iterators
+           fIt(0), // fplot iterator
+           sIt(0); // style iterator
+  for (std::vector<PlotType>::iterator it = plotKind_.begin(); it != plotKind_.end(); ++it){
+    switch(*it){
+      case plot2d:
+        gr_.Plot(xd_[xIt], yd_[yIt], styles_[sIt].c_str());
+        ++xIt; ++yIt; 
+        ++sIt;
+        break;
+      case plot3d:
+        gr_.Plot(xd_[xIt], yd_[yIt], styles_[sIt].c_str());
+        ++xIt; ++yIt; ++zIt;
+        ++sIt;
+        break;
+      case plotf:
+        gr_.FPlot(fplots_[fIt].c_str(), styles_[sIt].c_str());
+        ++fIt;
+        ++sIt;
+    }
+  }
+/*
   for (std::size_t i = 0; i < xd_.size(); ++i){
     gr_.Plot(xd_[i], yd_[i], styles_[i].c_str());
   }
   for (std::size_t j = 0; j < fplots_.size(); ++j){
     gr_.FPlot(fplots_[j].c_str(), fstyles_[j].c_str());
   }
-
+*/
   if (autoRanges_ && xd_.size() == 0 && fplots_.size() > 0){
     std::cout << "* Figure - Warning * fplot can't set proper ranges itself, it has to be done manually!\n";
   }
