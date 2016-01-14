@@ -1,8 +1,8 @@
 # pragma once
 
 # include <iostream>
-# include <Eigen/Dense>
 # include <mgl2/mgl.h>
+# include <memory>
 # include <utility>
 # include <stdexcept>
 
@@ -54,7 +54,10 @@ class Figure {
 template <typename yVector>
 void Figure::plot(const yVector& y, const std::string style, const char* legend)
 {
-  const Eigen::VectorXd x = Eigen::VectorXd::LinSpaced(y.size(), 1, y.size());
+  std::vector<double> x(y.size());
+  for (std::size_t i = 0; i < y.size(); ++i){
+    x[i] = i + 1;
+  }
   plot(x, y, style, legend);
 }
 
