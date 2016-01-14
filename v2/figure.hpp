@@ -4,11 +4,13 @@
 # include <Eigen/Dense>
 # include <mgl2/mgl.h>
 # include <utility>
+# include <stdexcept>
 
 class Figure {
   public:
     Figure();
-    void setRanges(const mglData& xd, const mglData& yd);
+    void setRanges(const mglData& xd, const mglData& yd, double vertMargin = 0.1);
+    void setRanges(const mglData& xd, const mglData& yd, const mglData& zd);
     void grid(const bool on = true, const std::string gridType = "-", const std::string gridCol = "h");
     void xlabel(const char* label, const double pos = 0);
     void ylabel(const char* label, const double pos = 0);
@@ -18,7 +20,7 @@ class Figure {
     template <typename xVector, typename yVector, typename zVector> void plot3(const xVector& x, const yVector& y, const zVector& z, const std::string style, const char* legend = 0);
     void fplot(const std::string function, const std::string style, const char* legend = 0);
     void ranges(const double xMin, const double xMax, const double yMin, const double yMax);
-    void setlog(const bool logx = true, const bool logy = true);
+    void setlog(const bool logx = false, const bool logy = false, const bool logz = false);
     void save(const char* file);
     void title(const char* text);
 
@@ -32,10 +34,13 @@ class Figure {
     std::string gridType_; // grid type
     std::string gridCol_; // grid color
     double ranges_[4]; // axis ranges
+    double zranges_[2]; // z axis ranges
     bool initRanges_; // have the ranges been set yet?
+    bool initZRanges_;
     bool autoRanges_; // auto ranges or ranges as the user set them?
     bool xlogScale_; // needed for warning in xlabel
     bool ylogScale_; // is the y Axis in logarithmic scale? needed for range margin and warning in ylabel
+    bool zlogScale_;
     double fontSizePT_; // font size in PT
     std::vector<PlotType> plotKind_;
     std::vector<mglData> xd_, yd_, zd_; // vector of plot data
@@ -81,12 +86,13 @@ void Figure::plot(const xVector& x, const yVector& y, const std::string style, c
     gr_.AddLegend(legend, style.c_str());
   }
 }
-/*
+
 template <typename xVector, typename yVector, typename zVector> 
 void Figure::plot3(const xVector& x, const yVector& y, const zVector& z, const std::string style, const char* legend)
 {
-  std::cout << "Called plot3d with: " << x.size() << " " << y.size() << " " << z.size() << "\n";
-  if (!(x.size() == y.size() == z.size())){
+  gr_.SubPlot(1,1,0,"_^"); // when using 3d plot we cant cut the top and bottom margins
+
+  if (!(x.size() == y.size() && y.size() == z.size())){
       throw std::length_error("In function Figure::plot(): Vectors must have same sizes!");
   }
 
@@ -95,7 +101,7 @@ void Figure::plot3(const xVector& x, const yVector& y, const zVector& z, const s
           zd(z.data(), z.size());
 
   // set ranges
-  // setRanges(xd, yd, zd);
+  setRanges(xd, yd, zd);
   // push back
   xd_.push_back(xd);
   yd_.push_back(yd);
@@ -113,7 +119,6 @@ void Figure::plot3(const xVector& x, const yVector& y, const zVector& z, const s
   }
 }
 
-*/
 
 
 
