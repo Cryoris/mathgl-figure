@@ -44,6 +44,10 @@
 \newgeometry{bottom=2cm, left=3cm, right=3cm}
 \section{Installation}
 
+First of all note that this library needs MathGL - that's a plotting library with a vast amount of possibilities, options and plot types.
+The Figure class is only a nice interface for easy use of that particular library. \\
+You can get it at \url{http://mathgl.sourceforge.net/doc_en/Download.html#Download}. \\
+
 Follow the steps in the \texttt{INSTALL} file. \\
 In the directory of the \texttt{CMakeLists.txt} do: \\ \\
 Under Linux/Mac OS: \\
@@ -83,7 +87,7 @@ int main()
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=0.7\textwidth]{opening-example.pdf}
+  \includegraphics[width=0.6\textwidth]{opening-example.pdf}
   \thispagestyle{empty}
 \end{figure}
 
@@ -172,8 +176,9 @@ void legend( const double xPos = 1,
 
 \textbf{Definition:}
 \begin{lstlisting}
-void setlog( const bool logx = true, 
-             const bool logy = true )
+void setlog( const bool logx = false, 
+             const bool logy = false,
+             const bool logz = false )
 \end{lstlisting}
 %
 \textbf{Restrictions:} All plots will use the latest \texttt{setlog} options or default if none have been set. \\ \\
@@ -194,22 +199,21 @@ void setlog( const bool logx = true,
   fig.save("plot.eps"); // -> default (= linear) scaling
 \end{lstlisting}
 
-
+\newpage
 \command{plot} 
 
 \textbf{Definition:} 
 \begin{lstlisting}
 template <typename yVector>
-void plot( const yVector y, 
+void plot( const yVector& y, 
            const std::string style, 
            const char* legend = 0 )
 \end{lstlisting}
-\newpage
 
 \begin{lstlisting}
 template <typename xVector, typename yVector>
-void plot( const xVector x, 
-           const yVector y, 
+void plot( const xVector& x, 
+           const yVector& y, 
            const std::string style, 
            const char* legend = 0 ) 
 \end{lstlisting}
@@ -232,6 +236,27 @@ Furthermore \texttt{x} and \texttt{y} must have same length. Also note that the 
   fig.save("data.eps");
 \end{lstlisting}
 
+\command{plot3}
+
+\textbf{Definition:}
+\begin{lstlisting}
+template <typename xVector, typename yVector, typename zVector>
+void plot3( const xVector& x,
+            const yVector& y,
+            const zVector& z,
+            const std::string style,
+            const char* legend = 0 )
+\end{lstlisting}
+\textbf{Restrictions:} Same restrictions as in \texttt{plot} for two vectors, extended to \texttt{zVector}. \\ \\
+%
+\textbf{Examples:}
+\begin{lstlisting}
+  Figure fig;
+  fig.plot3(x, y, z, "b");
+  fig.save("trajectories.eps");
+\end{lstlisting}
+
+
 \command{fplot}
 
 \textbf{Definition:}
@@ -245,20 +270,19 @@ void fplot( const std::string function,
 \textbf{Examples:}
 \begin{lstlisting}
   Figure fig;
-  fig.fplot("3*x\^2 + 4.5/x + exp(x)", "b");
+  fig.fplot("3*x^2 + 4.5/x + exp(x)", "b");
   fig.fplot("exp(cos(pi*x))","r","some periodic function");
   fig.ranges(0.5, 2, 0, 5); // be sure to set ranges for fplot!
   fig.save("plot.eps");
 
   Figure fig;
   fig.plot(x, y, "b", "Benchmark");
-  fig.fplot("x\^2", "k;", "\\ O(x\^2)");
+  fig.fplot("x^2", "k;", "\\ O(x^2)");
   // here we don't set the ranges as it uses the range given by the x,y data
-  // and we use fplot to draw a reference line (O(x\^2))
+  // and we use fplot to draw a reference line (O(x^2))
   fig.save("runtimes.eps"); 
 \end{lstlisting}
 
-\newpage
 \command{ranges}
 
 \textbf{Definition:}
@@ -287,6 +311,7 @@ void ranges( const double xMin,
   fig.plot(x, y, "b");
 \end{lstlisting}
 
+\newpage
 \command{save}
 
 \textbf{Definition:}
