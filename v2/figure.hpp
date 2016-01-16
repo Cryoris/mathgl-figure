@@ -1,11 +1,13 @@
 # pragma once
 
 # include <iostream>
-# include <mgl2/mgl.h>
 # include <memory>
+# include <Eigen/Dense>
 # include <utility>
 # include <stdexcept>
 
+namespace mgl {
+# include <mgl2/mgl.h>
 class Figure {
   public:
     Figure();
@@ -45,10 +47,10 @@ class Figure {
     std::vector<PlotType> plotKind_;
     std::vector<mglData> xd_, yd_, zd_; // vector of plot data
     std::vector<std::string> fplots_; // vector of fplot functions
-    std::vector<std::string> styles_; // vector of plot styles 
+    std::vector<std::string> styles_; // vector of plot styles
 };
 
-/* plot y data 
+/* plot y data
  * PRE : -
  * POST: add (range(1, length(y)))-y to plot queue with given style (must be given!) and set legend (optional) */
 template <typename yVector>
@@ -61,7 +63,7 @@ void Figure::plot(const yVector& y, const std::string style, const char* legend)
   plot(x, y, style, legend);
 }
 
-/* plot x,y data 
+/* plot x,y data
  * PRE : -
  * POST: add x-y to plot queue with given style (must be given!) and set legend (optional) */
 template <typename xVector, typename yVector> // same syntax for Eigen::VectorXd and std::vector<T>
@@ -84,13 +86,13 @@ void Figure::plot(const xVector& x, const yVector& y, const std::string style, c
 
   // save what kind of plot we're drawing
   plotKind_.push_back(plot2d);
-  
+
   if (legend != 0){
     gr_.AddLegend(legend, style.c_str());
   }
 }
 
-template <typename xVector, typename yVector, typename zVector> 
+template <typename xVector, typename yVector, typename zVector>
 void Figure::plot3(const xVector& x, const yVector& y, const zVector& z, const std::string style, const char* legend)
 {
   gr_.SubPlot(1,1,0,"_^"); // when using 3d plot we cant cut the top and bottom margins
@@ -109,7 +111,7 @@ void Figure::plot3(const xVector& x, const yVector& y, const zVector& z, const s
   xd_.push_back(xd);
   yd_.push_back(yd);
   zd_.push_back(zd);
-  
+
   // put plot style in queue
   styles_.push_back(style);
 
@@ -122,6 +124,4 @@ void Figure::plot3(const xVector& x, const yVector& y, const zVector& z, const s
   }
 }
 
-
-
-
+}

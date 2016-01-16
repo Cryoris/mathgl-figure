@@ -1,9 +1,10 @@
 # include <iostream>
 # include <utility> // pair
 # include <sstream> // needed for title layout
-# include <cstring> // needed for length of const char* 
+# include <cstring> // needed for length of const char*
 # include "figure.hpp"
 
+namespace mgl {
 void print(const mglData& d)
 {
   for (long i = 0; i < d.GetNx(); ++i){
@@ -16,12 +17,12 @@ void print(const mglData& d)
  * PRE : pointer to mglGraph will not cease to exist until operations are performed on this Figure
  * POST: Axis is true -- Grid is true and in light grey -- Legend is false -- Ranges will be set automatically */
 Figure::Figure()
-  : axis_(true), 
-    grid_(true), 
-    legend_(false), 
+  : axis_(true),
+    grid_(true),
+    legend_(false),
     legendPos_(std::pair<double, double>(1,1)),
-    gridType_(""), 
-    gridCol_("h"), 
+    gridType_(""),
+    gridCol_("h"),
     initRanges_(true),
     initZRanges_(true),
     autoRanges_(true),
@@ -30,8 +31,8 @@ Figure::Figure()
     zlogScale_(false),
     fontSizePT_(8),
     plotKind_(std::vector<PlotType>()),
-    xd_(std::vector<mglData>()), 
-    yd_(std::vector<mglData>()), 
+    xd_(std::vector<mglData>()),
+    yd_(std::vector<mglData>()),
     zd_(std::vector<mglData>()),
     styles_(std::vector<std::string>())
 {
@@ -39,23 +40,23 @@ Figure::Figure()
   gr_.SetTuneTicks(true, 1.0); // put the 'x10^5' closer to the graph
   gr_.LoadFont("heros");
   gr_.SetFontSizePT(fontSizePT_);
-  ranges_[0] = 1; ranges_[1] = 1.1; ranges_[2] = 1; ranges_[3] = 1.1; 
+  ranges_[0] = 1; ranges_[1] = 1.1; ranges_[2] = 1; ranges_[3] = 1.1;
   zranges_[0] = 1; zranges_[1] = 1.1;
   gr_.SetRanges(1, 1.1, 1, 1.1);
 };
 
 
-/* change grid settings 
- * PRE : - 
+/* change grid settings
+ * PRE : -
  * POST: No grid if on is false, grid style is gridType, grid color is gridCol.
  *       For those arguments which are not given default settings are used. */
 void Figure::grid(const bool on, const std::string gridType, const std::string gridCol)
 {
   if (on)
     grid_ = true;
-  else 
+  else
     grid_ = false;
-  
+
   gridType_ = gridType;
   gridCol_ = gridCol;
 }
@@ -93,7 +94,7 @@ void Figure::legend(const double xPos, const double yPos)
 }
 
 /* plot a function given by a string
- * PRE : proper format of the input, e.g.: "3*x^2 + exp(x)", see documentation for more details 
+ * PRE : proper format of the input, e.g.: "3*x^2 + exp(x)", see documentation for more details
  * POST: plot the function in given style */
 void Figure::fplot(const std::string function, const std::string style, const char* legend)
 {
@@ -106,7 +107,7 @@ void Figure::fplot(const std::string function, const std::string style, const ch
   }
 }
 
-/* set ranges 
+/* set ranges
  * PRE : -
  * POST: new ranges will be: x = [xMin, xMax], y = [yMin, yMax] */
 void Figure::ranges(const double xMin, const double xMax, const double yMin, const double yMax)
@@ -128,14 +129,14 @@ void Figure::setRanges(const mglData& xd, const mglData& yd, double vertMargin)
     return;
 
   const double xMax(xd.Maximal()),
-               yMax(yd.Maximal());
+    yMax(yd.Maximal());
   double xMin(xd.Minimal()),
-         yMin(yd.Minimal());
+    yMin(yd.Minimal());
   const long N = xd.GetNx();
 
   // if logscaling is active and some values are 0 or negative we must make sure that the range still is positive
   // -> x(or y)Min = smallest strictly positive value of x(or y)
-  std::function<bool(double)> isNegative = [](double x){ return x <= 0 ? true : false; }; 
+  std::function<bool(double)> isNegative = [](double x){ return x <= 0 ? true : false; };
   if (xlogScale_){
     if (xMax <= 0){
       throw std::range_error("In function Figure::setRanges() : Invalid ranges for logscaled plot - maximal x-value must be greater than 0.");
@@ -166,27 +167,27 @@ void Figure::setRanges(const mglData& xd, const mglData& yd, double vertMargin)
   // width/height of additional margin (in percentage) of the total width/height
   if (ylogScale_){
     // if vertMargin would be > 0, we may set the lower yrange to 0 or even < 0 which is not allowed in logscales
-    vertMargin = 0.0; 
+    vertMargin = 0.0;
   }
 
   const double horizMargin = 0.0; // margin left and right
 
   if (initRanges_) { // ranges have not been set yet, so set it according to data
-    ranges_[0] = xMin - horizMargin*xTot; 
-    ranges_[1] = xMax + horizMargin*xTot; 
-    ranges_[2] = yMin - vertMargin*yTot; 
+    ranges_[0] = xMin - horizMargin*xTot;
+    ranges_[1] = xMax + horizMargin*xTot;
+    ranges_[2] = yMin - vertMargin*yTot;
     ranges_[3] = yMax + vertMargin*yTot;
     initRanges_ = false;
   }
   else { // check in which directions ranges have to be extended
     if (ranges_[0] > xMin)
-      ranges_[0] = xMin - horizMargin*xTot; 
+      ranges_[0] = xMin - horizMargin*xTot;
     if (ranges_[1] < xMax)
-      ranges_[1] = xMax + horizMargin*xTot; 
+      ranges_[1] = xMax + horizMargin*xTot;
     if (ranges_[2] > yMin)
-      ranges_[2] = yMin - vertMargin*yTot; 
+      ranges_[2] = yMin - vertMargin*yTot;
     if (ranges_[3] < yMax)
-      ranges_[3] = yMax + vertMargin*yTot; 
+      ranges_[3] = yMax + vertMargin*yTot;
   }
   gr_.SetRanges(ranges_[0], ranges_[1], ranges_[2], ranges_[3]);
 }
@@ -205,7 +206,7 @@ void Figure::setRanges(const mglData& xd, const mglData& yd, const mglData& zd)
 
   // if logscaling is active and some values are 0 or negative we must make sure that the range still is positive
   // -> x(or y)Min = smallest strictly positive value of x(or y)
-  std::function<bool(double)> isNegative = [](double x){ return x <= 0 ? true : false; }; 
+  std::function<bool(double)> isNegative = [](double x){ return x <= 0 ? true : false; };
   if (zlogScale_){
     if (zMax <= 0){
       throw std::range_error("In function Figure::setRanges() : Invalid ranges for logscaled plot - maximal z-value must be greater than 0.");
@@ -218,28 +219,28 @@ void Figure::setRanges(const mglData& xd, const mglData& yd, const mglData& zd)
     std::remove_copy_if(&zd.a[0], &zd.a[N], &zdPositive.a[0], isNegative);
     zMin = zdPositive.Minimal();
   }
-  
+
   const double zTot = zMax - zMin;
   // width/height of additional margin (in percentage) of the total width/height
   double vertMargin;
   if (zlogScale_){
     // if vertMargin would be > 0, we may set the lower yrange to 0 or even < 0 which is not allowed in logscales
-    vertMargin = 0.0; 
+    vertMargin = 0.0;
   }
   else {
     vertMargin = 0.1; // margin top and bottom
   }
 
   if (initZRanges_) { // ranges have not been set yet, so set it according to data
-    zranges_[0] = zMin - vertMargin*zTot; 
-    zranges_[1] = zMax + vertMargin*zTot; 
+    zranges_[0] = zMin - vertMargin*zTot;
+    zranges_[1] = zMax + vertMargin*zTot;
     initZRanges_ = false;
   }
   else { // check in which directions ranges have to be extended
     if (zranges_[0] > zMin)
-      zranges_[0] = zMin - vertMargin*zTot; 
+      zranges_[0] = zMin - vertMargin*zTot;
     if (zranges_[1] < zMax)
-      zranges_[1] = zMax + vertMargin*zTot; 
+      zranges_[1] = zMax + vertMargin*zTot;
   }
 
   setRanges(xd, yd, 0.); // use this function to set the correct x and y ranges
@@ -270,24 +271,24 @@ void Figure::save(const char* file)
 
   // plotting
   unsigned xIt(0), yIt(0), zIt(0), // x,y,z iterators
-           fIt(0), // fplot iterator
-           sIt(0); // style iterator
+    fIt(0), // fplot iterator
+    sIt(0); // style iterator
   for (std::vector<PlotType>::iterator it = plotKind_.begin(); it != plotKind_.end(); ++it){
     switch(*it){
-      case plot2d:
-        gr_.Plot(xd_[xIt], yd_[yIt], styles_[sIt].c_str());
-        ++xIt; ++yIt; 
-        ++sIt;
-        break;
-      case plot3d:
-        gr_.Plot(xd_[xIt], yd_[yIt], zd_[zIt], styles_[sIt].c_str());
-        ++xIt; ++yIt; ++zIt;
-        ++sIt;
-        break;
-      case plotf:
-        gr_.FPlot(fplots_[fIt].c_str(), styles_[sIt].c_str());
-        ++fIt;
-        ++sIt;
+    case plot2d:
+      gr_.Plot(xd_[xIt], yd_[yIt], styles_[sIt].c_str());
+      ++xIt; ++yIt;
+      ++sIt;
+      break;
+    case plot3d:
+      gr_.Plot(xd_[xIt], yd_[yIt], zd_[zIt], styles_[sIt].c_str());
+      ++xIt; ++yIt; ++zIt;
+      ++sIt;
+      break;
+    case plotf:
+      gr_.FPlot(fplots_[fIt].c_str(), styles_[sIt].c_str());
+      ++fIt;
+      ++sIt;
     }
   }
 
@@ -303,7 +304,7 @@ void Figure::save(const char* file)
  * POST: linear, semilogx, semilogy or loglog scale according to bools logx and logy */
 void Figure::setlog(const bool logx, const bool logy, const bool logz)
 {
- std::string x(""), y(""), z("");
+  std::string x(""), y(""), z("");
   if (logx){
     x = "lg(x)";
     xlogScale_ = true;
@@ -330,4 +331,5 @@ void Figure::title(const char* text)
   std::stringstream ss;
   ss << "@{" << text << "}";
   gr_.Title(ss.str().c_str());
+}
 }
