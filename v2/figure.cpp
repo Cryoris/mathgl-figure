@@ -61,7 +61,7 @@ void Figure::grid(const bool on, const std::string gridType, const std::string g
   else {
     grid_ = false;
   }
-  
+
   gridType_ = gridType;
   gridCol_ = gridCol;
 }
@@ -105,7 +105,7 @@ void Figure::fplot(const std::string function, const std::string style, const ch
 {
 #if NDEBUG
   std::cout << "Called fplot!\n";
-#endif 
+#endif
   fplots_.push_back(function);
   styles_.push_back(style);
   plotKind_.push_back(plotf);
@@ -293,31 +293,31 @@ void Figure::save(const char* file)
     sIt(0); // style iterator
   for (std::vector<PlotType>::iterator it = plotKind_.begin(); it != plotKind_.end(); ++it){
     switch(*it){
-      case plot2d:
+    case plot2d:
 #if NDEBUG
-        std::cout << "Plotting 2d ... \n";
+      std::cout << "Plotting 2d ... \n";
 #endif
-        gr_.Plot(xd_[xIt], yd_[yIt], styles_[sIt].c_str());
-        ++xIt; ++yIt; 
-        ++sIt;
-        break;
-      case plot3d:
+      gr_.Plot(xd_[xIt], yd_[yIt], styles_[sIt].c_str());
+      ++xIt; ++yIt;
+      ++sIt;
+      break;
+    case plot3d:
 #if NDEBUG
-        std::cout << "Plotting 3d ... \n";
+      std::cout << "Plotting 3d ... \n";
 #endif
-        gr_.Plot(xd_[xIt], yd_[yIt], zd_[zIt], styles_[sIt].c_str());
-        ++xIt; ++yIt; ++zIt;
-        ++sIt;
-        break;
-      case plotf:
+      gr_.Plot(xd_[xIt], yd_[yIt], zd_[zIt], styles_[sIt].c_str());
+      ++xIt; ++yIt; ++zIt;
+      ++sIt;
+      break;
+    case plotf:
 #if NDEBUG
-        std::cout << "Plotting fplot ... \n";
-        std::cout << "ranges: " << ranges_[0] << ", " << ranges_[1] << ", " << ranges_[2] << ", " << ranges_[3] << "\n";
-        std::cout << "function: " << fplots_[fIt] << " style: " << styles_[sIt] << "\n";
+      std::cout << "Plotting fplot ... \n";
+      std::cout << "ranges: " << ranges_[0] << ", " << ranges_[1] << ", " << ranges_[2] << ", " << ranges_[3] << "\n";
+      std::cout << "function: " << fplots_[fIt] << " style: " << styles_[sIt] << "\n";
 #endif
-        gr_.FPlot(fplots_[fIt].c_str(), styles_[sIt].c_str());
-        ++fIt;
-        ++sIt;
+      gr_.FPlot(fplots_[fIt].c_str(), styles_[sIt].c_str());
+      ++fIt;
+      ++sIt;
     }
   }
 
@@ -327,7 +327,19 @@ void Figure::save(const char* file)
 #if NDEBUG
   std::cout << "Writing to file ... \n";
 #endif
-  gr_.WriteEPS(file);
+
+  // Writing to file
+  // If the "file" has an extension .png then write to png
+  // else write to an eps
+  std::size_t filename_size = 0;
+  while(file[filename_size++] != '\0');
+  if(std::string(file+filename_size-5, file+filename_size-1) == ".png")
+    gr_.WritePNG(file);
+  else if (std::string(file+filename_size-5, file+filename_size-1) == ".eps")
+    gr_.WriteEPS(file);
+  else
+    gr_.WriteEPS((std::string(file) + ".eps").c_str());
+
 }
 
 /* (un-)set logscaling

@@ -1,12 +1,9 @@
 # pragma once
 
 # include <iostream>
-<<<<<<< HEAD
 # include <mgl2/mgl.h>
 # include <memory>
-=======
 # include <Eigen/Dense>
->>>>>>> 5513c4d4eba6c8f94609d63a1ac46a91748fa30e
 # include <utility>
 # include <stdexcept>
 
