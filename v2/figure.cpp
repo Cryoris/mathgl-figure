@@ -3,9 +3,12 @@
 # include <functional>
 # include <sstream> // needed for title layout
 # include <cstring> // needed for length of const char*
+# include <memory>
+# include "MglPlot.hpp"
 # include "figure.hpp"
 
 namespace mgl {
+
 void print(const mglData& d)
 {
   for (long i = 0; i < d.GetNx(); ++i){
@@ -21,7 +24,7 @@ Figure::Figure()
   : axis_(true),
     grid_(true),
     legend_(false),
-    legendPos_(std::pair<double, double>(1,1)),
+    legendPos_(1,1),
     gridType_(""),
     gridCol_("h"),
     initRanges_(true),
@@ -30,13 +33,7 @@ Figure::Figure()
     xlogScale_(false),
     ylogScale_(false),
     zlogScale_(false),
-    fontSizePT_(8),
-    plotKind_(std::vector<PlotType>()),
-    xd_(std::vector<mglData>()),
-    yd_(std::vector<mglData>()),
-    zd_(std::vector<mglData>()),
-    fplots_(std::vector<std::string>()),
-    styles_(std::vector<std::string>())
+    fontSizePT_(8)
 {
   gr_.SubPlot(1,1,0,"_");
   gr_.SetTuneTicks(true, 1.0); // put the 'x10^5' closer to the graph
@@ -61,29 +58,29 @@ void Figure::grid(const bool on, const std::string gridType, const std::string g
   else {
     grid_ = false;
   }
-  
+
   gridType_ = gridType;
   gridCol_ = gridCol;
 }
 
-void Figure::xlabel(const char* label, const double pos)
+void Figure::xlabel(const std::string &label, const double pos)
 {
   if (xlogScale_){
     std::cout << "* Figure - Warning * for better text-alignment, xlabel should be called before plot\n";
   }
-  gr_.Label('x', label, pos);
+  gr_.Label('x', label.c_str(), pos);
 }
 
 /* setting y-axis label
  * PRE : -
  * POST: ylabel initialized with given position */
-void Figure::ylabel(const char* label, const double pos)
+void Figure::ylabel(const std::string &label, const double pos)
 {
   if (ylogScale_){
     std::cout << "* Figure - Warning * for better text-alignment, ylabel should be called before plot\n";
   }
   gr_.SubPlot(1,1,0,"<_");
-  gr_.Label('y', label, pos);
+  gr_.Label('y', label.c_str(), pos);
 }
 
 /* set or unset legend
@@ -101,17 +98,18 @@ void Figure::legend(const double xPos, const double yPos)
 /* plot a function given by a string
  * PRE : proper format of the input, e.g.: "3*x^2 + exp(x)", see documentation for more details
  * POST: plot the function in given style */
-void Figure::fplot(const std::string function, const std::string style, const char* legend)
+void Figure::fplot(const std::string& function, const std::string& style, const std::string& legend)
 {
 #if NDEBUG
   std::cout << "Called fplot!\n";
-#endif 
-  fplots_.push_back(function);
-  styles_.push_back(style);
-  plotKind_.push_back(plotf);
+#endif
+  // fplots_.push_back(function);
+  // styles_.push_back(style);
+  // plotKind_.push_back(plotf);
 
-  if (legend != 0){
-    gr_.AddLegend(legend, style.c_str());
+  plots_.emplace_back(std::unique_ptr<MglFPlot>(new MglFPlot(function, style)));
+  if (!legend.empty()){
+    gr_.AddLegend(legend.c_str(), style.c_str());
   }
 }
 
@@ -157,7 +155,8 @@ void Figure::setRanges(const mglData& xd, const mglData& yd, double vertMargin)
       std::cout << "* Figure - Warning * non-positive values of x data will not appear on plot. \n";
     }
     std::vector<double> buffer(N, xMax);
-    mglData xdPositive(buffer.data(), buffer.size());
+    mglData xdPositive = make_mgldata(buffer);
+
     std::remove_copy_if(&xd.a[0], &xd.a[N], &xdPositive.a[0], isNegative);
     xMin = xdPositive.Minimal();
   }
@@ -169,7 +168,7 @@ void Figure::setRanges(const mglData& xd, const mglData& yd, double vertMargin)
       std::cout << "* Figure - Warning * non-positive values of y data will not appear on plot. \n";
     }
     std::vector<double> buffer(N, yMax);
-    mglData ydPositive(buffer.data(), buffer.size());
+    mglData ydPositive = make_mgldata(buffer);
     std::remove_copy_if(&yd.a[0], &yd.a[N], &ydPositive.a[0], isNegative);
     yMin = ydPositive.Minimal();
   }
@@ -230,7 +229,7 @@ void Figure::setRanges(const mglData& xd, const mglData& yd, const mglData& zd)
       std::cout << "* Figure - Warning * non-positive values of z data will not appear on plot. \n";
     }
     std::vector<double> buffer(N, zMax);
-    mglData zdPositive(buffer.data(), buffer.size());
+    mglData zdPositive = make_mgldata(buffer);
     std::remove_copy_if(&zd.a[0], &zd.a[N], &zdPositive.a[0], isNegative);
     zMin = zdPositive.Minimal();
   }
@@ -267,17 +266,13 @@ void Figure::setRanges(const mglData& xd, const mglData& yd, const mglData& zd)
 /* save figure
  * PRE : file must have '.eps' ending
  * POST: write figure to 'file' in eps-format */
-void Figure::save(const char* file)
+void Figure::save(const std::string & file)
 {
 #if NDEBUG
   std::cout << "Setting the options (grid, axis, legend) ... \n";
 #endif
-  if (zd_.size() > 0){ // we are dealing with a 3d plot -> set the Box
-    gr_.Rotate(40, 60);
-    gr_.Box();
-  }
   // setting grid and axis (must be done in the end when final ranges are known)
-  if (grid_){
+  if (grid_) {
     gr_.Grid(gridType_.c_str() , gridCol_.c_str());
   }
   if (axis_){
@@ -287,47 +282,20 @@ void Figure::save(const char* file)
     gr_.Legend(legendPos_.first, legendPos_.second);
   }
 
-  // plotting
-  unsigned xIt(0), yIt(0), zIt(0), // x,y,z iterators
-    fIt(0), // fplot iterator
-    sIt(0); // style iterator
-  for (std::vector<PlotType>::iterator it = plotKind_.begin(); it != plotKind_.end(); ++it){
-    switch(*it){
-      case plot2d:
-#if NDEBUG
-        std::cout << "Plotting 2d ... \n";
-#endif
-        gr_.Plot(xd_[xIt], yd_[yIt], styles_[sIt].c_str());
-        ++xIt; ++yIt; 
-        ++sIt;
-        break;
-      case plot3d:
-#if NDEBUG
-        std::cout << "Plotting 3d ... \n";
-#endif
-        gr_.Plot(xd_[xIt], yd_[yIt], zd_[zIt], styles_[sIt].c_str());
-        ++xIt; ++yIt; ++zIt;
-        ++sIt;
-        break;
-      case plotf:
-#if NDEBUG
-        std::cout << "Plotting fplot ... \n";
-        std::cout << "ranges: " << ranges_[0] << ", " << ranges_[1] << ", " << ranges_[2] << ", " << ranges_[3] << "\n";
-        std::cout << "function: " << fplots_[fIt] << " style: " << styles_[sIt] << "\n";
-#endif
-        gr_.FPlot(fplots_[fIt].c_str(), styles_[sIt].c_str());
-        ++fIt;
-        ++sIt;
+  for(auto &p : plots_) {
+    if(p->is_3d()){
+      gr_.Rotate(40, 60);
+      gr_.Box();
     }
+    p->plot(&gr_);
   }
 
-  if (autoRanges_ && xd_.size() == 0 && fplots_.size() > 0){
-    std::cout << "* Figure - Warning * fplot can't set proper ranges itself, it has to be done manually!\n";
-  }
-#if NDEBUG
-  std::cout << "Writing to file ... \n";
-#endif
-  gr_.WriteEPS(file);
+  if(file.find(".png") != std::string::npos)
+    gr_.WritePNG(file.c_str());
+  else if (file.find(".eps") != std::string::npos)
+    gr_.WriteEPS(file.c_str());
+  else
+    gr_.WriteEPS((file + ".eps").c_str());
 }
 
 /* (un-)set logscaling
@@ -359,7 +327,7 @@ void Figure::setlog(const bool logx, const bool logy, const bool logz)
 /* setting title
  * PRE : -
  * POST: title_ variable set to 'text' with small-font option ("@") */
-void Figure::title(const char* text)
+void Figure::title(const std::string& text)
 {
   std::stringstream ss;
   ss << "@{" << text << "}";
