@@ -1,5 +1,6 @@
-# include <iostream>
 # include <utility> // pair
+# include <algorithm>
+# include <functional>
 # include <sstream> // needed for title layout
 # include <cstring> // needed for length of const char*
 # include "figure.hpp"
@@ -34,6 +35,7 @@ Figure::Figure()
     xd_(std::vector<mglData>()),
     yd_(std::vector<mglData>()),
     zd_(std::vector<mglData>()),
+    fplots_(std::vector<std::string>()),
     styles_(std::vector<std::string>())
 {
   gr_.SubPlot(1,1,0,"_");
@@ -42,7 +44,8 @@ Figure::Figure()
   gr_.SetFontSizePT(fontSizePT_);
   ranges_[0] = 1; ranges_[1] = 1.1; ranges_[2] = 1; ranges_[3] = 1.1;
   zranges_[0] = 1; zranges_[1] = 1.1;
-  gr_.SetRanges(1, 1.1, 1, 1.1);
+  //gr.SetRanges(1, 1.1, 1, 1.1);
+  gr_.SetRanges(1, 1.1, 1, 1.1, 1, 1.1);
 };
 
 
@@ -52,11 +55,13 @@ Figure::Figure()
  *       For those arguments which are not given default settings are used. */
 void Figure::grid(const bool on, const std::string gridType, const std::string gridCol)
 {
-  if (on)
+  if (on){
     grid_ = true;
-  else
+  }
+  else {
     grid_ = false;
-
+  }
+  
   gridType_ = gridType;
   gridCol_ = gridCol;
 }
@@ -98,6 +103,9 @@ void Figure::legend(const double xPos, const double yPos)
  * POST: plot the function in given style */
 void Figure::fplot(const std::string function, const std::string style, const char* legend)
 {
+#if NDEBUG
+  std::cout << "Called fplot!\n";
+#endif 
   fplots_.push_back(function);
   styles_.push_back(style);
   plotKind_.push_back(plotf);
@@ -112,8 +120,9 @@ void Figure::fplot(const std::string function, const std::string style, const ch
  * POST: new ranges will be: x = [xMin, xMax], y = [yMin, yMax] */
 void Figure::ranges(const double xMin, const double xMax, const double yMin, const double yMax)
 {
-  if (xMin > xMax || yMin > yMax)
+  if (xMin > xMax || yMin > yMax){
     throw std::range_error("In function Figure::ranges(): xMin must be smaller than xMax and yMin smaller than yMax!");
+  }
 
   autoRanges_ = false;
   gr_.SetRanges(xMin, xMax, yMin, yMax);
@@ -125,6 +134,9 @@ void Figure::ranges(const double xMin, const double xMax, const double yMin, con
 // need the argument vertMargin to be able to set it to 0 when plotting in 3d
 void Figure::setRanges(const mglData& xd, const mglData& yd, double vertMargin)
 {
+#if NDEBUG
+  std::cout << "setRanges for 2dim called\n";
+#endif
   if (!autoRanges_)
     return;
 
@@ -197,6 +209,9 @@ void Figure::setRanges(const mglData& xd, const mglData& yd, double vertMargin)
  * POST: set the ranges in such a way that all data will be visible */
 void Figure::setRanges(const mglData& xd, const mglData& yd, const mglData& zd)
 {
+#if NDEBUG
+  std::cout << "setRanges for 3dim called\n";
+#endif
   if (!autoRanges_)
     return;
 
@@ -254,6 +269,9 @@ void Figure::setRanges(const mglData& xd, const mglData& yd, const mglData& zd)
  * POST: write figure to 'file' in eps-format */
 void Figure::save(const char* file)
 {
+#if NDEBUG
+  std::cout << "Setting the options (grid, axis, legend) ... \n";
+#endif
   if (zd_.size() > 0){ // we are dealing with a 3d plot -> set the Box
     gr_.Rotate(40, 60);
     gr_.Box();
@@ -275,27 +293,40 @@ void Figure::save(const char* file)
     sIt(0); // style iterator
   for (std::vector<PlotType>::iterator it = plotKind_.begin(); it != plotKind_.end(); ++it){
     switch(*it){
-    case plot2d:
-      gr_.Plot(xd_[xIt], yd_[yIt], styles_[sIt].c_str());
-      ++xIt; ++yIt;
-      ++sIt;
-      break;
-    case plot3d:
-      gr_.Plot(xd_[xIt], yd_[yIt], zd_[zIt], styles_[sIt].c_str());
-      ++xIt; ++yIt; ++zIt;
-      ++sIt;
-      break;
-    case plotf:
-      gr_.FPlot(fplots_[fIt].c_str(), styles_[sIt].c_str());
-      ++fIt;
-      ++sIt;
+      case plot2d:
+#if NDEBUG
+        std::cout << "Plotting 2d ... \n";
+#endif
+        gr_.Plot(xd_[xIt], yd_[yIt], styles_[sIt].c_str());
+        ++xIt; ++yIt; 
+        ++sIt;
+        break;
+      case plot3d:
+#if NDEBUG
+        std::cout << "Plotting 3d ... \n";
+#endif
+        gr_.Plot(xd_[xIt], yd_[yIt], zd_[zIt], styles_[sIt].c_str());
+        ++xIt; ++yIt; ++zIt;
+        ++sIt;
+        break;
+      case plotf:
+#if NDEBUG
+        std::cout << "Plotting fplot ... \n";
+        std::cout << "ranges: " << ranges_[0] << ", " << ranges_[1] << ", " << ranges_[2] << ", " << ranges_[3] << "\n";
+        std::cout << "function: " << fplots_[fIt] << " style: " << styles_[sIt] << "\n";
+#endif
+        gr_.FPlot(fplots_[fIt].c_str(), styles_[sIt].c_str());
+        ++fIt;
+        ++sIt;
     }
   }
 
   if (autoRanges_ && xd_.size() == 0 && fplots_.size() > 0){
     std::cout << "* Figure - Warning * fplot can't set proper ranges itself, it has to be done manually!\n";
   }
-
+#if NDEBUG
+  std::cout << "Writing to file ... \n";
+#endif
   gr_.WriteEPS(file);
 }
 
@@ -318,7 +349,9 @@ void Figure::setlog(const bool logx, const bool logy, const bool logz)
     zlogScale_ = true;
   }
 
-  std::cout << "options: " << x << y << z << "\n";
+#if NDEBUG
+  std::cout << "Set setlog x,y,z with: " << x << y << z << "\n";
+#endif
 
   gr_.SetFunc(x.c_str(), y.c_str(), z.c_str());
 }

@@ -1,8 +1,12 @@
 # pragma once
 
 # include <iostream>
+<<<<<<< HEAD
+# include <mgl2/mgl.h>
 # include <memory>
+=======
 # include <Eigen/Dense>
+>>>>>>> 5513c4d4eba6c8f94609d63a1ac46a91748fa30e
 # include <utility>
 # include <stdexcept>
 
@@ -26,8 +30,9 @@ class Figure {
     void save(const char* file);
     void title(const char* text);
 
-  private:
     enum PlotType { plot2d, plot3d, plotf };
+
+  private:
     mglGraph gr_; // graph in which the plots will be saved
     bool axis_; // plot axis?
     bool grid_; // plot grid?
