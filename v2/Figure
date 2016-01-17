@@ -1,0 +1,7 @@
+#ifndef FIGURE
+#define FIGURE
+
+#include "figure.hpp"
+#include "figure.cpp"
+
+#endif
