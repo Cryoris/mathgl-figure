@@ -4,9 +4,9 @@
 # include <memory>
 # include <utility>
 # include <stdexcept>
+# include <mgl2/mgl.h>
 
 namespace mgl {
-# include <mgl2/mgl.h>
 class Figure {
   public:
     Figure();
