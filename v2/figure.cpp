@@ -1,4 +1,6 @@
+# include <iostream>
 # include <utility> // pair
+# include <vector>
 # include <algorithm>
 # include <functional>
 # include <sstream> // needed for title layout
