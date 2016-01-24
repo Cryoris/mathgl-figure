@@ -29,22 +29,22 @@ Figure::Figure()
     legendPos_(1,1),
     gridType_("xy"),
     gridCol_("{h7}"),
+    has_3d_(false),
     ranges_({ std::numeric_limits<double>::max(), std::numeric_limits<double>::lowest(),
           std::numeric_limits<double>::max(), std::numeric_limits<double>::lowest()}),
     zranges_({std::numeric_limits<double>::max(), std::numeric_limits<double>::lowest()}),
     autoRanges_(true),
     fontSizePT_(6),
-    figHeight(800),
-    figWidth(800)
-{
-}
+    figHeight_(800),
+    figWidth_(800)
+{}
 
 void Figure::setHeight(int height) {
-  figHeight = height;
+  figHeight_ = height;
 }
 
 void Figure::setWidth(int width) {
-  figWidth = width;
+  figWidth_ = width;
 }
 
 void Figure::setFontSize(int size) {
@@ -64,7 +64,7 @@ void Figure::grid(bool on, const std::string& gridType,  const std::string& grid
 
 void Figure::xlabel(const std::string &label, double pos)
 {
-  xMglLabel = MglLabel(label, pos);
+  xMglLabel_ = MglLabel(label, pos);
 }
 
 /* setting y-axis label
@@ -72,7 +72,7 @@ void Figure::xlabel(const std::string &label, double pos)
  * POST: ylabel initialized with given position */
 void Figure::ylabel(const std::string &label, double pos)
 {
-  yMglLabel = MglLabel(label, pos);
+  yMglLabel_ = MglLabel(label, pos);
 }
 
 /* set or unset legend
@@ -150,12 +150,15 @@ void Figure::setRanges(const mglData& xd, const mglData& yd, const mglData& zd)
  * POST: linear, semilogx, semilogy or loglog scale according to bools logx and logy */
 void Figure::setlog(bool logx, bool logy, bool logz)
 {
-  if(logx)
-    xFunc = "lg(x)";
-  if(logy)
-    yFunc = "lg(y)";
-  if(logz)
-    zFunc = "lg(z)";
+  if(logx){
+    xFunc_ = "lg(x)";
+  }
+  if(logy){
+    yFunc_ = "lg(y)";
+  }
+  if(logz){
+    zFunc_ = "lg(z)";
+  }
 }
 
 /* setting title
@@ -171,7 +174,7 @@ void Figure::title(const std::string& text)
  * PRE : -
  * POST: add (range(1, length(y)))-y to plot queue with given style (must be given!) and set legend (optional) */
 template <typename yVector>
-void Figure::plot(const yVector& y, const std::string &style, const std::string &legend)
+void Figure::plot(const yVector& y, const std::string& style, const std::string& legend)
 {
   std::vector<double> x(y.size());
   std::iota(x.begin(), x.end(), 1);
@@ -182,7 +185,7 @@ void Figure::plot(const yVector& y, const std::string &style, const std::string 
  * PRE : -
  * POST: add x-y to plot queue with given style (must be given!) and set legend (optional) */
 template <typename xVector, typename yVector> // same syntax for Eigen::VectorXd and std::vector<T>
-void Figure::plot(const xVector& x, const yVector& y, const std::string &style, const std::string &legend)
+void Figure::plot(const xVector& x, const yVector& y, const std::string& style, const std::string& legend)
 {
   if (x.size() != y.size()){
     throw std::length_error("In function Figure::plot(): Vectors must have same sizes!");
@@ -191,24 +194,29 @@ void Figure::plot(const xVector& x, const yVector& y, const std::string &style, 
   mglData xd = make_mgldata(x);
   mglData yd = make_mgldata(y);
 
-  if(autoRanges_)
+  if(autoRanges_){
     setRanges(xd, yd, 0.);
+  }
   plots_.emplace_back(std::unique_ptr<MglPlot2d>(new MglPlot2d(xd, yd, style, legend)));
 }
 
 template <typename xVector, typename yVector, typename zVector>
 void Figure::plot3(const xVector& x, const yVector& y, const zVector& z, const std::string& style, const std::string& legend)
 {
+
+  has_3d_ = true; // needed to set zranges in save-function and call mgl::Rotate
+
   if (!(x.size() == y.size() && y.size() == z.size())){
     throw std::length_error("In function Figure::plot(): Vectors must have same sizes!");
   }
 
-  mglData xd = make_mglData(x);
-  mglData yd = make_mglData(y);
-  mglData zd = make_mglData(z);
+  mglData xd = make_mgldata(x);
+  mglData yd = make_mgldata(y);
+  mglData zd = make_mgldata(z);
 
-  if(autoRanges_)
+  if(autoRanges_){
     setRanges(xd, yd, zd);
+  }
   plots_.emplace_back(std::unique_ptr<MglPlot3d>(new MglPlot3d(xd, yd, zd, style, legend)));
 }
 
@@ -219,49 +227,76 @@ void Figure::save(const std::string & file) {
   mglGraph gr_; // graph in which the plots will be saved
 
   // Set size. This *must* be the first function called on the mglGraph
-  gr_.SetSize(figWidth, figHeight);
+  gr_.SetSize(figWidth_, figHeight_);
+
+  // find out which subplot type to use
+  std::string subPlotType = "";
+  if (yMglLabel_.str_.size() != 0){
+    subPlotType += "<";
+  }
+  if (xMglLabel_.str_.size() != 0){
+    subPlotType += "_";
+  }
+  if (title_.size() != 0){
+    subPlotType += "^";
+  }
+
   gr_.LoadFont("heros");
   gr_.SetFontSizePT(fontSizePT_);
 
-  // Set ranges
-  gr_.SetRanges(ranges_[0], ranges_[1], ranges_[2], ranges_[3]);
+  // Set ranges and call rotate if necessary
+  if (has_3d_){
+    gr_.SetRanges(ranges_[0], ranges_[1], ranges_[2], ranges_[3], zranges_[0], zranges_[1]);
+    gr_.Rotate(60, 30);
+    gr_.Box();
+  }
+  else {
+    gr_.SubPlot(1, 1, 0, subPlotType.c_str()); // with 3d plots we need the margins
+    gr_.SetRanges(ranges_[0], ranges_[1], ranges_[2], ranges_[3]);
+  }
+
+  // Set label - before setting curvilinear because MathGL is vulnerable to errors otherwise
+  gr_.Label('x', xMglLabel_.str_.c_str(), xMglLabel_.pos_);
+  gr_.Label('y', yMglLabel_.str_.c_str(), yMglLabel_.pos_);
 
   // Set Curvilinear functions
-  gr_.SetFunc(xFunc.c_str(), yFunc.c_str(), zFunc.c_str());
+  gr_.SetFunc(xFunc_.c_str(), yFunc_.c_str(), zFunc_.c_str());
 
   // Add grid
-  if (grid_)
+  if (grid_){
     gr_.Grid(gridType_.c_str() , gridCol_.c_str());
-
+  }
+ 
   // Add axis
-  if (axis_)
+  if (axis_){
     gr_.Axis();
-  // Set label
-  gr_.Label('x', xMglLabel.str_.c_str(), xMglLabel.pos_);
-  gr_.Label('y', yMglLabel.str_.c_str(), yMglLabel.pos_);
-  // Add bounding box
-  gr_.Box("@{W9}k", false);
+  }
+  
+  // Plot
   for(auto &p : plots_) {
-    if(p->is_3d()){
-      gr_.Rotate(40, 60);
-      gr_.Box();
-    }
     p->plot(&gr_);
   }
-  if (legend_)
+
+  // Add legend
+  if (legend_){
     gr_.Legend(legendPos_.first, legendPos_.second);
+  }
 
   // Add title
-  gr_.Title(("@{" + title_ +"}").c_str());
+  if (title_.size() != 0){
+    gr_.Title(title_.c_str());
+  }
 
-  if(file.find(".png") != std::string::npos)
+  // Checking if to plot in png or eps and save file
+  if(file.find(".png") != std::string::npos){
     gr_.WritePNG(file.c_str());
-  else if (file.find(".eps") != std::string::npos)
+  }
+  else if (file.find(".eps") != std::string::npos){
     gr_.WriteEPS(file.c_str());
-  else
+  }
+  else {
     gr_.WriteEPS((file + ".eps").c_str());
+  }
 }
 
-
-
-}
+} // end namespace mgl

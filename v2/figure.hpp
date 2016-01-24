@@ -12,9 +12,9 @@
 
 # include "MglPlot.hpp"
 # include "MglLabel.hpp"
+# include <mgl2/mgl.h>
 
 namespace mgl {
-# include <mgl2/mgl.h>
 
 //!
 /*!
@@ -86,8 +86,6 @@ public:
 
   void title(const std::string& text);
 
-  enum PlotType { plot2d, plot3d, plotf };
-
 private:
   bool axis_; // plot axis?
   bool grid_; // plot grid?
@@ -95,16 +93,15 @@ private:
   std::pair<double, double> legendPos_; // legend position
   std::string gridType_; // grid type
   std::string gridCol_; // grid color
+  bool has_3d_; // are there 3d plots?
   std::array<double, 4> ranges_; // axis ranges
   std::array<double, 2> zranges_; // z axis ranges
   bool autoRanges_; // auto ranges or ranges as the user set them?
   std::string title_;
-  std::string xFunc;
-  std::string yFunc;
-  std::string zFunc;
-  MglLabel xMglLabel, yMglLabel;
+  std::string xFunc_, yFunc_, zFunc_;
+  MglLabel xMglLabel_, yMglLabel_;
   double fontSizePT_; // font size in PT
-  int figHeight, figWidth;
+  int figHeight_, figWidth_;
   std::vector<std::unique_ptr<MglPlot> > plots_;
 };
 
