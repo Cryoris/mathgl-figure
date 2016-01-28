@@ -99,9 +99,9 @@ int main()
 
 \textbf{Definition:}
 \begin{lstlisting}
-void grid( const bool on = true, 
-           const std::string gridType = "-", 
-           const std::string gridCol = "h" )
+void grid( const bool& on = true, 
+           const std::string& gridType = "-", 
+           const std::string& gridCol = "h" )
 \end{lstlisting}
 %
 \textbf{Restrictions:} None. \\ \\
@@ -123,11 +123,11 @@ void grid( const bool on = true,
 
 \textbf{Definition:}
 \begin{lstlisting}
-void xlabel( const char* label, 
-             const double pos = 0 )
+void xlabel( const std::string& label, 
+             const double& pos = 0 )
 \end{lstlisting}
 %
-\textbf{Restrictions:} If \texttt{setlog} is called \texttt{xlabel} should be called beforehand. \\ \\
+\textbf{Restrictions:} None. \\ \\
 %
 \textbf{Examples:}
 \begin{lstlisting}
@@ -137,13 +137,7 @@ void xlabel( const char* label,
   fig.save("plot.eps");
 
   Figure fig;
-  fig.setlog(true, true);
-  fig.plot(x, y, "+g");
-  fig.xlabel("Logarithmic x axis"); // Not good - should be called before 'setlog'
-  fig.save("plot.eps");
-
-  Figure fig;
-  fig.xlabel("Logarithmix x axis"); // Good
+  fig.xlabel("Logarithmix x axis"); // no restricitons on call order
   fig.setlog(true, true);
   fig.plot(x, y, "+g");
   fig.save("plot.eps");
@@ -154,11 +148,11 @@ void xlabel( const char* label,
 
 \textbf{Definition:}
 \begin{lstlisting}
-void ylabel( const char* label, 
-             const double pos = 0 )
+void ylabel( const std::string& label, 
+             const double& pos = 0 )
 \end{lstlisting}
 %
-\textbf{Restrictions:} If \texttt{setlog} is called \texttt{ylabel} should be called beforehand. \\ \\
+\textbf{Restrictions:} None. \\ \\
 %
 \textbf{Examples:} See \texttt{xlabel}.
 
@@ -166,8 +160,8 @@ void ylabel( const char* label,
 
 \textbf{Definition:}
 \begin{lstlisting}
-void legend( const double xPos = 1, 
-             const double yPos = 1 )
+void legend( const double& xPos = 1, 
+             const double& yPos = 1 )
 \end{lstlisting}
 %
 \textbf{Restrictions:} None. 
@@ -176,9 +170,9 @@ void legend( const double xPos = 1,
 
 \textbf{Definition:}
 \begin{lstlisting}
-void setlog( const bool logx = false, 
-             const bool logy = false,
-             const bool logz = false )
+void setlog( const bool& logx = false, 
+             const bool& logy = false,
+             const bool& logz = false )
 \end{lstlisting}
 %
 \textbf{Restrictions:} All plots will use the latest \texttt{setlog} options or default if none have been set. \\ \\
@@ -206,16 +200,16 @@ void setlog( const bool logx = false,
 \begin{lstlisting}
 template <typename yVector>
 void plot( const yVector& y, 
-           const std::string style, 
-           const char* legend = 0 )
+           const std::string& style, 
+           const std::string& legend = 0 )
 \end{lstlisting}
 
 \begin{lstlisting}
 template <typename xVector, typename yVector>
 void plot( const xVector& x, 
            const yVector& y, 
-           const std::string style, 
-           const char* legend = 0 ) 
+           const std::string& style, 
+           const std::string& legend = 0 ) 
 \end{lstlisting}
 \textbf{Restrictions:} \texttt{xVector} and \texttt{yVector} must have a \texttt{size()} method, which returns the size of the vector 
 and a \texttt{data()} method, which returns a pointer to the first element in the vector. \\
@@ -244,8 +238,8 @@ template <typename xVector, typename yVector, typename zVector>
 void plot3( const xVector& x,
             const yVector& y,
             const zVector& z,
-            const std::string style,
-            const char* legend = 0 )
+            const std::string& style,
+            const std::string& legend = 0 )
 \end{lstlisting}
 \textbf{Restrictions:} Same restrictions as in \texttt{plot} for two vectors, extended to \texttt{zVector}. \\ \\
 %
@@ -261,9 +255,9 @@ void plot3( const xVector& x,
 
 \textbf{Definition:}
 \begin{lstlisting}
-void fplot( const std::string function,
-            const std::string style,
-            const char* legend = 0 )
+void fplot( const std::string& function,
+            const std::string& style,
+            const std::string& legend = 0 )
 \end{lstlisting}
 \textbf{Restrictions:} None. \\ \\
 %
@@ -287,10 +281,10 @@ void fplot( const std::string function,
 
 \textbf{Definition:}
 \begin{lstlisting}
-void ranges( const double xMin, 
-             const double xMax, 
-             const double yMin, 
-             const double yMax )
+void ranges( const double& xMin, 
+             const double& xMax, 
+             const double& yMin, 
+             const double& yMax )
 \end{lstlisting}
 %
 \textbf{Restrictions:} xMin $<$ xMax, yMin $<$ yMax and ranges must be $>$ 0 for axis in logarithmic scale. \\ \\
@@ -316,26 +310,28 @@ void ranges( const double xMin,
 
 \textbf{Definition:}
 \begin{lstlisting}
-void save( const char* file )
+void save( const std::string& file )
 \end{lstlisting}
 %
-\textbf{Restrictions:} The filename \textit{must} end on \texttt{.eps}! \\ \\
+\textbf{Restrictions:} Supported file formats: \texttt{.eps} and \texttt{.png}. \\ \\
 %
 \textbf{Examples:}
 \begin{lstlisting}
   Figure fig;
   fig.save("plot.eps"); // OK
-\end{lstlisting}
-\begin{lstlisting}
+
   Figure fig;
-  fig.save("plot.png"); // Not OK - Only eps-format supported!
+  fig.save("plot"); // OK - will be saved as plot.eps
+
+  Figure fig;
+  fig.save("plot.png"); // OK - but needs -lpng flag!
 \end{lstlisting}
 
 \command{title}
 
 \textbf{Definition:}
 \begin{lstlisting}
-void title( const char* text )
+void title( const std::string& text )
 \end{lstlisting}
 %
 \textbf{Restrictions:} None.
