@@ -62,7 +62,7 @@ void Figure::grid(bool on, const std::string& gridType,  const std::string& grid
   gridCol_ = gridCol;
 }
 
-void Figure::xlabel(const std::string &label, double pos)
+void Figure::xlabel(const std::string& label, double pos)
 {
   xMglLabel_ = MglLabel(label, pos);
 }
@@ -70,7 +70,7 @@ void Figure::xlabel(const std::string &label, double pos)
 /* setting y-axis label
  * PRE : -
  * POST: ylabel initialized with given position */
-void Figure::ylabel(const std::string &label, double pos)
+void Figure::ylabel(const std::string& label, double pos)
 {
   yMglLabel_ = MglLabel(label, pos);
 }
@@ -78,7 +78,7 @@ void Figure::ylabel(const std::string &label, double pos)
 /* set or unset legend
  * PRE : -
  * POST: if on is true legend will be plotted, otherwise not */
-void Figure::legend(const double xPos, const double yPos)
+void Figure::legend(const double& xPos, const double& yPos)
 {
   if (std::abs(xPos) > 2 || std::abs(yPos) > 2){
     std::cout << "* Figure - Warning * Legend may be out of the graphic due to large xPos or yPos\n";
@@ -102,13 +102,39 @@ void Figure::fplot(const std::string& function, const std::string& style, const 
 /* set ranges
  * PRE : -
  * POST: new ranges will be: x = [xMin, xMax], y = [yMin, yMax] */
-void Figure::ranges(const double xMin, const double xMax, const double yMin, const double yMax)
+void Figure::ranges(const double& xMin, const double& xMax, const double& yMin, const double& yMax)
 {
   if (xMin > xMax || yMin > yMax){
-    throw std::range_error("In function Figure::ranges(): xMin must be smaller than xMax and yMin smaller than yMax!");
+    std::cerr << "In function Figure::ranges(): xMin must be smaller than xMax and yMin smaller than yMax!";
   }
   autoRanges_ = false;
   ranges_ = {xMin, xMax, yMin, yMax};
+}
+
+/* get minimal positive ( > 0 ) value of mglData
+ * PRE : -
+ * POST: minimal positive value of argument, 
+ *       std::numeric_limits<double>::max() if no positive value cotained,
+ *       print a warning to std::cerr if a value <= 0 encountered         */
+double minPositive(const mglData& d)
+{
+  double result = std::numeric_limits<double>::max();
+  bool print_warning = false;
+
+  for (long i = 0; i < d.GetNx(); ++i){
+    if (d.a[i] > 0){
+      result = std::min(result, d.a[i]);
+    }
+    else {
+      print_warning = true;
+    }
+  }
+
+  if (print_warning) {
+    std::cerr << "* Figure - Warning * non-positive values of data will not appear on plot. \n";
+  }
+    
+  return result;
 }
 
 /* change ranges of plot
@@ -123,10 +149,25 @@ void Figure::setRanges(const mglData& xd, const mglData& yd, double vertMargin)
   double xMax(xd.Maximal()), yMax(yd.Maximal());
   double xMin(xd.Minimal()), yMin(yd.Minimal());
 
+  if (xFunc_ == "lg(x)"){
+    if (xMax <= 0){
+      std::cerr << "In function Figure::setRanges() : Invalid ranges for logscaled plot - maximal x-value must be greater than 0.";
+    }
+    yMin = minPositive(xd);
+  }
+  if (yFunc_ == "lg(y)"){
+    if (yMax <= 0){
+      std::cerr << "In function Figure::setRanges() : Invalid ranges for logscaled plot - maximal y-value must be greater than 0.";
+    }
+    vertMargin = 0.; // no vertical margin in logscaling yet
+    yMin = minPositive(yd);
+  }
+
+  const double yTot = yMax - yMin;
   ranges_[0] = std::min(xMin , ranges_[0]);
   ranges_[1] = std::max(xMax , ranges_[1]);
-  ranges_[2] = std::min(yMin , ranges_[2]);
-  ranges_[3] = std::max(yMax , ranges_[3]);
+  ranges_[2] = std::min(yMin - yTot*vertMargin, ranges_[2]); // adding a slight margin in linear plots on bottom
+  ranges_[3] = std::max(yMax + yTot*vertMargin, ranges_[3]); // .. and top
 }
 
 /* change ranges of the plotted region in 3d
@@ -138,7 +179,14 @@ void Figure::setRanges(const mglData& xd, const mglData& yd, const mglData& zd)
   std::cout << "setRanges for 3dim called\n";
 #endif
   const double zMax(zd.Maximal());
-  const double zMin(zd.Minimal());
+  double zMin(zd.Minimal());
+
+  if (zFunc_ == "lg(z)"){
+    if (zMax <= 0){
+      std::cerr << "In function Figure::setRanges() : Invalid ranges for logscaled plot - maximal z-value must be greater than 0.";
+    }
+    zMin = minPositive(zd);
+  }
   zranges_[0] = std::min(zranges_[0], zMin);
   zranges_[1] = std::max(zranges_[1], zMax);
   setRanges(xd, yd, 0.); // use this function to set the correct x and y ranges
@@ -188,7 +236,7 @@ template <typename xVector, typename yVector> // same syntax for Eigen::VectorXd
 void Figure::plot(const xVector& x, const yVector& y, const std::string& style, const std::string& legend)
 {
   if (x.size() != y.size()){
-    throw std::length_error("In function Figure::plot(): Vectors must have same sizes!");
+    std::cerr << "In function Figure::plot(): Vectors must have same sizes!";
   }
 
   mglData xd = make_mgldata(x);
@@ -207,7 +255,7 @@ void Figure::plot3(const xVector& x, const yVector& y, const zVector& z, const s
   has_3d_ = true; // needed to set zranges in save-function and call mgl::Rotate
 
   if (!(x.size() == y.size() && y.size() == z.size())){
-    throw std::length_error("In function Figure::plot(): Vectors must have same sizes!");
+    std::cerr << "In function Figure::plot(): Vectors must have same sizes!";
   }
 
   mglData xd = make_mgldata(x);
@@ -223,7 +271,7 @@ void Figure::plot3(const xVector& x, const yVector& y, const zVector& z, const s
 /* save figure
  * PRE : file must have '.eps' ending
  * POST: write figure to 'file' in eps-format */
-void Figure::save(const std::string & file) {
+void Figure::save(const std::string& file) {
   mglGraph gr_; // graph in which the plots will be saved
 
   // Set size. This *must* be the first function called on the mglGraph

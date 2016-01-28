@@ -59,7 +59,7 @@ public:
 
   void ylabel(const std::string& label, double pos = 0);
 
-  void legend(double xPos = 1,  double yPos = 1);
+  void legend(const double& xPos = 1, const double& yPos = 1);
 
   template <typename yVector>
   void plot(const yVector& y, const std::string &style, const std::string& legend = "");
@@ -72,7 +72,7 @@ public:
 
   void fplot(const std::string& function, const std::string &style, const std::string& legend = "");
 
-  void ranges(const double xMin, const double xMax, const double yMin, const double yMax);
+  void ranges(const double& xMin, const double& xMax, const double& yMin, const double& yMax);
 
   void setlog(bool logx = false, bool logy = false, bool logz = false);
 
