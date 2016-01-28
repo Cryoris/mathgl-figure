@@ -4,10 +4,16 @@
 # include <algorithm>
 # include <functional>
 # include <sstream> // needed for title layout
+# include <limits>
 # include <cstring> // needed for length of const char*
+# include <memory>
+# include "MglPlot.hpp"
+# include "MglLabel.hpp"
 # include "figure.hpp"
 
 namespace mgl {
+
+
 void print(const mglData& d)
 {
   for (long i = 0; i < d.GetNx(); ++i){
@@ -23,39 +29,36 @@ Figure::Figure()
   : axis_(true),
     grid_(true),
     legend_(false),
-    legendPos_(std::pair<double, double>(1,1)),
-    gridType_(""),
-    gridCol_("h"),
-    initRanges_(true),
-    initZRanges_(true),
+    legendPos_(1,1),
+    gridType_("xy"),
+    gridCol_("{h7}"),
+    has_3d_(false),
+    ranges_({ std::numeric_limits<double>::max(), std::numeric_limits<double>::lowest(),
+          std::numeric_limits<double>::max(), std::numeric_limits<double>::lowest()}),
+    zranges_({std::numeric_limits<double>::max(), std::numeric_limits<double>::lowest()}),
     autoRanges_(true),
-    xlogScale_(false),
-    ylogScale_(false),
-    zlogScale_(false),
-    fontSizePT_(8),
-    plotKind_(std::vector<PlotType>()),
-    xd_(std::vector<mglData>()),
-    yd_(std::vector<mglData>()),
-    zd_(std::vector<mglData>()),
-    fplots_(std::vector<std::string>()),
-    styles_(std::vector<std::string>())
-{
-  gr_.SubPlot(1,1,0,"_");
-  gr_.SetTuneTicks(true, 1.0); // put the 'x10^5' closer to the graph
-  gr_.LoadFont("heros");
-  gr_.SetFontSizePT(fontSizePT_);
-  ranges_[0] = 1; ranges_[1] = 1.1; ranges_[2] = 1; ranges_[3] = 1.1;
-  zranges_[0] = 1; zranges_[1] = 1.1;
-  //gr.SetRanges(1, 1.1, 1, 1.1);
-  gr_.SetRanges(1, 1.1, 1, 1.1, 1, 1.1);
-};
+    fontSizePT_(6),
+    figHeight_(800),
+    figWidth_(800)
+{}
 
+void Figure::setHeight(int height) {
+  figHeight_ = height;
+}
+
+void Figure::setWidth(int width) {
+  figWidth_ = width;
+}
+
+void Figure::setFontSize(int size) {
+  fontSizePT_ = size;
+}
 
 /* change grid settings
  * PRE : -
  * POST: No grid if on is false, grid style is gridType, grid color is gridCol.
  *       For those arguments which are not given default settings are used. */
-void Figure::grid(const bool on, const std::string gridType, const std::string gridCol)
+void Figure::grid(bool on, const std::string& gridType,  const std::string& gridCol)
 {
   if (on){
     grid_ = true;
@@ -68,30 +71,23 @@ void Figure::grid(const bool on, const std::string gridType, const std::string g
   gridCol_ = gridCol;
 }
 
-void Figure::xlabel(const char* label, const double pos)
+void Figure::xlabel(const std::string& label, double pos)
 {
-  if (xlogScale_){
-    std::cout << "* Figure - Warning * for better text-alignment, xlabel should be called before plot\n";
-  }
-  gr_.Label('x', label, pos);
+  xMglLabel_ = MglLabel(label, pos);
 }
 
 /* setting y-axis label
  * PRE : -
  * POST: ylabel initialized with given position */
-void Figure::ylabel(const char* label, const double pos)
+void Figure::ylabel(const std::string& label, double pos)
 {
-  if (ylogScale_){
-    std::cout << "* Figure - Warning * for better text-alignment, ylabel should be called before plot\n";
-  }
-  gr_.SubPlot(1,1,0,"<_");
-  gr_.Label('y', label, pos);
+  yMglLabel_ = MglLabel(label, pos);
 }
 
 /* set or unset legend
  * PRE : -
  * POST: if on is true legend will be plotted, otherwise not */
-void Figure::legend(const double xPos, const double yPos)
+void Figure::legend(const double& xPos, const double& yPos)
 {
   if (std::abs(xPos) > 2 || std::abs(yPos) > 2){
     std::cout << "* Figure - Warning * Legend may be out of the graphic due to large xPos or yPos\n";
@@ -103,31 +99,51 @@ void Figure::legend(const double xPos, const double yPos)
 /* plot a function given by a string
  * PRE : proper format of the input, e.g.: "3*x^2 + exp(x)", see documentation for more details
  * POST: plot the function in given style */
-void Figure::fplot(const std::string function, const std::string style, const char* legend)
+void Figure::fplot(const std::string& function, const std::string& style, const std::string& legend)
 {
 #if NDEBUG
   std::cout << "Called fplot!\n";
 #endif
-  fplots_.push_back(function);
-  styles_.push_back(style);
-  plotKind_.push_back(plotf);
 
-  if (legend != 0){
-    gr_.AddLegend(legend, style.c_str());
-  }
+  plots_.emplace_back(std::unique_ptr<MglFPlot>(new MglFPlot(function, style, legend)));
 }
 
 /* set ranges
  * PRE : -
  * POST: new ranges will be: x = [xMin, xMax], y = [yMin, yMax] */
-void Figure::ranges(const double xMin, const double xMax, const double yMin, const double yMax)
+void Figure::ranges(const double& xMin, const double& xMax, const double& yMin, const double& yMax)
 {
   if (xMin > xMax || yMin > yMax){
-    throw std::range_error("In function Figure::ranges(): xMin must be smaller than xMax and yMin smaller than yMax!");
+    std::cerr << "In function Figure::ranges(): xMin must be smaller than xMax and yMin smaller than yMax!";
+  }
+  autoRanges_ = false;
+  ranges_ = {xMin, xMax, yMin, yMax};
+}
+
+/* get minimal positive ( > 0 ) value of mglData
+ * PRE : -
+ * POST: minimal positive value of argument, 
+ *       std::numeric_limits<double>::max() if no positive value cotained,
+ *       print a warning to std::cerr if a value <= 0 encountered         */
+double minPositive(const mglData& d)
+{
+  double result = std::numeric_limits<double>::max();
+  bool print_warning = false;
+
+  for (long i = 0; i < d.GetNx(); ++i){
+    if (d.a[i] > 0){
+      result = std::min(result, d.a[i]);
+    }
+    else {
+      print_warning = true;
+    }
   }
 
-  autoRanges_ = false;
-  gr_.SetRanges(xMin, xMax, yMin, yMax);
+  if (print_warning) {
+    std::cerr << "* Figure - Warning * non-positive values of data will not appear on plot. \n";
+  }
+    
+  return result;
 }
 
 /* change ranges of plot
@@ -139,71 +155,28 @@ void Figure::setRanges(const mglData& xd, const mglData& yd, double vertMargin)
 #if NDEBUG
   std::cout << "setRanges for 2dim called\n";
 #endif
-  if (!autoRanges_)
-    return;
+  double xMax(xd.Maximal()), yMax(yd.Maximal());
+  double xMin(xd.Minimal()), yMin(yd.Minimal());
 
-  const double xMax(xd.Maximal()),
-    yMax(yd.Maximal());
-  double xMin(xd.Minimal()),
-    yMin(yd.Minimal());
-  const long N = xd.GetNx();
-
-  // if logscaling is active and some values are 0 or negative we must make sure that the range still is positive
-  // -> x(or y)Min = smallest strictly positive value of x(or y)
-  std::function<bool(double)> isNegative = [](double x){ return x <= 0 ? true : false; };
-  if (xlogScale_){
+  if (xFunc_ == "lg(x)"){
     if (xMax <= 0){
-      throw std::range_error("In function Figure::setRanges() : Invalid ranges for logscaled plot - maximal x-value must be greater than 0.");
+      std::cerr << "In function Figure::setRanges() : Invalid ranges for logscaled plot - maximal x-value must be greater than 0.";
     }
-    if (&xd.a[N] != std::find_if(&xd.a[0], &xd.a[N], isNegative)){
-      std::cout << "* Figure - Warning * non-positive values of x data will not appear on plot. \n";
-    }
-    std::vector<double> buffer(N, xMax);
-    mglData xdPositive(buffer.data(), buffer.size());
-    std::remove_copy_if(&xd.a[0], &xd.a[N], &xdPositive.a[0], isNegative);
-    xMin = xdPositive.Minimal();
+    yMin = minPositive(xd);
   }
-  if (ylogScale_){
+  if (yFunc_ == "lg(y)"){
     if (yMax <= 0){
-      throw std::range_error("In function Figure::setRanges() : Invalid ranges for logscaled plot - maximal y-value must be greater than 0.");
+      std::cerr << "In function Figure::setRanges() : Invalid ranges for logscaled plot - maximal y-value must be greater than 0.";
     }
-    if (&yd.a[N] != std::find_if(&yd.a[0], &yd.a[N], isNegative)){
-      std::cout << "* Figure - Warning * non-positive values of y data will not appear on plot. \n";
-    }
-    std::vector<double> buffer(N, yMax);
-    mglData ydPositive(buffer.data(), buffer.size());
-    std::remove_copy_if(&yd.a[0], &yd.a[N], &ydPositive.a[0], isNegative);
-    yMin = ydPositive.Minimal();
+    vertMargin = 0.; // no vertical margin in logscaling yet
+    yMin = minPositive(yd);
   }
 
-  const double xTot = xMax - xMin;
   const double yTot = yMax - yMin;
-  // width/height of additional margin (in percentage) of the total width/height
-  if (ylogScale_){
-    // if vertMargin would be > 0, we may set the lower yrange to 0 or even < 0 which is not allowed in logscales
-    vertMargin = 0.0;
-  }
-
-  const double horizMargin = 0.0; // margin left and right
-
-  if (initRanges_) { // ranges have not been set yet, so set it according to data
-    ranges_[0] = xMin - horizMargin*xTot;
-    ranges_[1] = xMax + horizMargin*xTot;
-    ranges_[2] = yMin - vertMargin*yTot;
-    ranges_[3] = yMax + vertMargin*yTot;
-    initRanges_ = false;
-  }
-  else { // check in which directions ranges have to be extended
-    if (ranges_[0] > xMin)
-      ranges_[0] = xMin - horizMargin*xTot;
-    if (ranges_[1] < xMax)
-      ranges_[1] = xMax + horizMargin*xTot;
-    if (ranges_[2] > yMin)
-      ranges_[2] = yMin - vertMargin*yTot;
-    if (ranges_[3] < yMax)
-      ranges_[3] = yMax + vertMargin*yTot;
-  }
-  gr_.SetRanges(ranges_[0], ranges_[1], ranges_[2], ranges_[3]);
+  ranges_[0] = std::min(xMin , ranges_[0]);
+  ranges_[1] = std::max(xMax , ranges_[1]);
+  ranges_[2] = std::min(yMin - yTot*vertMargin, ranges_[2]); // adding a slight margin in linear plots on bottom
+  ranges_[3] = std::max(yMax + yTot*vertMargin, ranges_[3]); // .. and top
 }
 
 /* change ranges of the plotted region in 3d
@@ -214,169 +187,179 @@ void Figure::setRanges(const mglData& xd, const mglData& yd, const mglData& zd)
 #if NDEBUG
   std::cout << "setRanges for 3dim called\n";
 #endif
-  if (!autoRanges_)
-    return;
-
   const double zMax(zd.Maximal());
   double zMin(zd.Minimal());
-  const long N = zd.GetNx();
 
-  // if logscaling is active and some values are 0 or negative we must make sure that the range still is positive
-  // -> x(or y)Min = smallest strictly positive value of x(or y)
-  std::function<bool(double)> isNegative = [](double x){ return x <= 0 ? true : false; };
-  if (zlogScale_){
+  if (zFunc_ == "lg(z)"){
     if (zMax <= 0){
-      throw std::range_error("In function Figure::setRanges() : Invalid ranges for logscaled plot - maximal z-value must be greater than 0.");
+      std::cerr << "In function Figure::setRanges() : Invalid ranges for logscaled plot - maximal z-value must be greater than 0.";
     }
-    if (&zd.a[N] != std::find_if(&zd.a[0], &zd.a[N], isNegative)){
-      std::cout << "* Figure - Warning * non-positive values of z data will not appear on plot. \n";
-    }
-    std::vector<double> buffer(N, zMax);
-    mglData zdPositive(buffer.data(), buffer.size());
-    std::remove_copy_if(&zd.a[0], &zd.a[N], &zdPositive.a[0], isNegative);
-    zMin = zdPositive.Minimal();
+    zMin = minPositive(zd);
   }
-
-  const double zTot = zMax - zMin;
-  // width/height of additional margin (in percentage) of the total width/height
-  double vertMargin;
-  if (zlogScale_){
-    // if vertMargin would be > 0, we may set the lower yrange to 0 or even < 0 which is not allowed in logscales
-    vertMargin = 0.0;
-  }
-  else {
-    vertMargin = 0.1; // margin top and bottom
-  }
-
-  if (initZRanges_) { // ranges have not been set yet, so set it according to data
-    zranges_[0] = zMin - vertMargin*zTot;
-    zranges_[1] = zMax + vertMargin*zTot;
-    initZRanges_ = false;
-  }
-  else { // check in which directions ranges have to be extended
-    if (zranges_[0] > zMin)
-      zranges_[0] = zMin - vertMargin*zTot;
-    if (zranges_[1] < zMax)
-      zranges_[1] = zMax + vertMargin*zTot;
-  }
-
+  zranges_[0] = std::min(zranges_[0], zMin);
+  zranges_[1] = std::max(zranges_[1], zMax);
   setRanges(xd, yd, 0.); // use this function to set the correct x and y ranges
-  // now set all the ranges (also the z ranges)
-  gr_.SetRanges(ranges_[0], ranges_[1], ranges_[2], ranges_[3], zranges_[0], zranges_[1]);
 }
 
-
-/* save figure
- * PRE : file must have '.eps' ending
- * POST: write figure to 'file' in eps-format */
-void Figure::save(const char* file)
-{
-#if NDEBUG
-  std::cout << "Setting the options (grid, axis, legend) ... \n";
-#endif
-  if (zd_.size() > 0){ // we are dealing with a 3d plot -> set the Box
-    gr_.Rotate(40, 60);
-    gr_.Box();
-  }
-  // setting grid and axis (must be done in the end when final ranges are known)
-  if (grid_){
-    gr_.Grid(gridType_.c_str() , gridCol_.c_str());
-  }
-  if (axis_){
-    gr_.Axis();
-  }
-  if (legend_){
-    gr_.Legend(legendPos_.first, legendPos_.second);
-  }
-
-  // plotting
-  unsigned xIt(0), yIt(0), zIt(0), // x,y,z iterators
-    fIt(0), // fplot iterator
-    sIt(0); // style iterator
-  for (std::vector<PlotType>::iterator it = plotKind_.begin(); it != plotKind_.end(); ++it){
-    switch(*it){
-    case plot2d:
-#if NDEBUG
-      std::cout << "Plotting 2d ... \n";
-#endif
-      gr_.Plot(xd_[xIt], yd_[yIt], styles_[sIt].c_str());
-      ++xIt; ++yIt;
-      ++sIt;
-      break;
-    case plot3d:
-#if NDEBUG
-      std::cout << "Plotting 3d ... \n";
-#endif
-      gr_.Plot(xd_[xIt], yd_[yIt], zd_[zIt], styles_[sIt].c_str());
-      ++xIt; ++yIt; ++zIt;
-      ++sIt;
-      break;
-    case plotf:
-#if NDEBUG
-      std::cout << "Plotting fplot ... \n";
-      std::cout << "ranges: " << ranges_[0] << ", " << ranges_[1] << ", " << ranges_[2] << ", " << ranges_[3] << "\n";
-      std::cout << "function: " << fplots_[fIt] << " style: " << styles_[sIt] << "\n";
-#endif
-      gr_.FPlot(fplots_[fIt].c_str(), styles_[sIt].c_str());
-      ++fIt;
-      ++sIt;
-    }
-  }
-
-  if (autoRanges_ && xd_.size() == 0 && fplots_.size() > 0){
-    std::cout << "* Figure - Warning * fplot can't set proper ranges itself, it has to be done manually!\n";
-  }
-#if NDEBUG
-  std::cout << "Writing to file ... \n";
-#endif
-
-  // Writing to file
-  // If the "file" has an extension .png then write to png
-  // else write to an eps
-  std::size_t filename_size = 0;
-  while(file[filename_size++] != '\0');
-  if(std::string(file+filename_size-5, file+filename_size-1) == ".png")
-    gr_.WritePNG(file);
-  else if (std::string(file+filename_size-5, file+filename_size-1) == ".eps")
-    gr_.WriteEPS(file);
-  else
-    gr_.WriteEPS((std::string(file) + ".eps").c_str());
-
-}
 
 /* (un-)set logscaling
  * PRE : -
  * POST: linear, semilogx, semilogy or loglog scale according to bools logx and logy */
-void Figure::setlog(const bool logx, const bool logy, const bool logz)
+void Figure::setlog(bool logx, bool logy, bool logz)
 {
-  std::string x(""), y(""), z("");
-  if (logx){
-    x = "lg(x)";
-    xlogScale_ = true;
+  if(logx){
+    xFunc_ = "lg(x)";
   }
-  if (logy){
-    y = "lg(y)";
-    ylogScale_ = true;
+  if(logy){
+    yFunc_ = "lg(y)";
   }
-  if (logz){
-    z = "lg(z)";
-    zlogScale_ = true;
+  if(logz){
+    zFunc_ = "lg(z)";
   }
-
-#if NDEBUG
-  std::cout << "Set setlog x,y,z with: " << x << y << z << "\n";
-#endif
-
-  gr_.SetFunc(x.c_str(), y.c_str(), z.c_str());
 }
 
 /* setting title
  * PRE : -
  * POST: title_ variable set to 'text' with small-font option ("@") */
-void Figure::title(const char* text)
+void Figure::title(const std::string& text)
 {
-  std::stringstream ss;
-  ss << "@{" << text << "}";
-  gr_.Title(ss.str().c_str());
+  title_ = text;
 }
+
+
+/* plot y data
+ * PRE : -
+ * POST: add (range(1, length(y)))-y to plot queue with given style (must be given!) and set legend (optional) */
+template <typename yVector>
+void Figure::plot(const yVector& y, const std::string& style, const std::string& legend)
+{
+  std::vector<double> x(y.size());
+  std::iota(x.begin(), x.end(), 1);
+  plot(x, y, style, legend);
 }
+
+/* plot x,y data
+ * PRE : -
+ * POST: add x-y to plot queue with given style (must be given!) and set legend (optional) */
+// same syntax for Eigen::VectorXd and std::vector<T>
+template <typename xVector, typename yVector>
+typename std::enable_if<!std::is_same<typename std::remove_pointer<typename std::decay<yVector>::type>::type, char >::value, void>::type
+Figure::plot(const xVector& x, const yVector& y, const std::string& style, const std::string& legend)
+{
+  if (x.size() != y.size()){
+    std::cerr << "In function Figure::plot(): Vectors must have same sizes!";
+  }
+
+  mglData xd = make_mgldata(x);
+  mglData yd = make_mgldata(y);
+
+  if(autoRanges_){
+    setRanges(xd, yd, 0.);
+  }
+  plots_.emplace_back(std::unique_ptr<MglPlot2d>(new MglPlot2d(xd, yd, style, legend)));
+}
+
+template <typename xVector, typename yVector, typename zVector>
+void Figure::plot3(const xVector& x, const yVector& y, const zVector& z, const std::string& style, const std::string& legend)
+{
+
+  has_3d_ = true; // needed to set zranges in save-function and call mgl::Rotate
+
+  if (!(x.size() == y.size() && y.size() == z.size())){
+    std::cerr << "In function Figure::plot(): Vectors must have same sizes!";
+  }
+
+  mglData xd = make_mgldata(x);
+  mglData yd = make_mgldata(y);
+  mglData zd = make_mgldata(z);
+
+  if(autoRanges_){
+    setRanges(xd, yd, zd);
+  }
+  plots_.emplace_back(std::unique_ptr<MglPlot3d>(new MglPlot3d(xd, yd, zd, style, legend)));
+}
+
+/* save figure
+ * PRE : file must have '.eps' ending
+ * POST: write figure to 'file' in eps-format */
+void Figure::save(const std::string& file) {
+  mglGraph gr_; // graph in which the plots will be saved
+
+  // Set size. This *must* be the first function called on the mglGraph
+  gr_.SetSize(figWidth_, figHeight_);
+
+  // find out which subplot type to use
+  std::string subPlotType = "";
+  if (yMglLabel_.str_.size() != 0){
+    subPlotType += "<";
+  }
+  if (xMglLabel_.str_.size() != 0){
+    subPlotType += "_";
+  }
+  if (title_.size() != 0){
+    subPlotType += "^";
+  }
+
+  gr_.LoadFont("heros");
+  gr_.SetFontSizePT(fontSizePT_);
+
+  // Set ranges and call rotate if necessary
+  if (has_3d_){
+    gr_.SetRanges(ranges_[0], ranges_[1], ranges_[2], ranges_[3], zranges_[0], zranges_[1]);
+    gr_.Rotate(60, 30);
+  }
+  else {
+    gr_.SubPlot(1, 1, 0, subPlotType.c_str()); // with 3d plots we need the margins
+    gr_.SetRanges(ranges_[0], ranges_[1], ranges_[2], ranges_[3]);
+  }
+
+  // Set label - before setting curvilinear because MathGL is vulnerable to errors otherwise
+  gr_.Label('x', xMglLabel_.str_.c_str(), xMglLabel_.pos_);
+  gr_.Label('y', yMglLabel_.str_.c_str(), yMglLabel_.pos_);
+
+  // Set Curvilinear functions
+  gr_.SetFunc(xFunc_.c_str(), yFunc_.c_str(), zFunc_.c_str());
+
+  // Add grid
+  if (grid_){
+    gr_.Grid(gridType_.c_str() , gridCol_.c_str());
+  }
+
+  // Add axis
+  if (axis_){
+    gr_.Axis();
+  }
+
+  gr_.Box();
+  // Plot
+  for(auto &p : plots_) {
+    p->plot(&gr_);
+  }
+
+ // Add legend
+  if (legend_){
+    gr_.Legend(legendPos_.first, legendPos_.second);
+  }
+
+  // Add title
+  if (title_.size() != 0){
+    gr_.Title(title_.c_str());
+  }
+
+#if NDEBUG
+  std::cout << "Writing to file ... \n";
+#endif
+
+  // Checking if to plot in png or eps and save file
+  if(file.find(".png") != std::string::npos){
+    gr_.WritePNG(file.c_str());
+  }
+  else if (file.find(".eps") != std::string::npos){
+    gr_.WriteEPS(file.c_str());
+  }
+  else {
+    gr_.WriteEPS((file + ".eps").c_str());
+  }
+}
+
+} // end namespace mgl
