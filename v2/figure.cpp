@@ -253,7 +253,7 @@ void Figure::save(const std::string & file) {
     gr_.SubPlot(1, 1, 0, subPlotType.c_str()); // with 3d plots we need the margins
     gr_.SetRanges(ranges_[0], ranges_[1], ranges_[2], ranges_[3]);
   }
-  gr_.Box();
+
   // Set label - before setting curvilinear because MathGL is vulnerable to errors otherwise
   gr_.Label('x', xMglLabel_.str_.c_str(), xMglLabel_.pos_);
   gr_.Label('y', yMglLabel_.str_.c_str(), yMglLabel_.pos_);
@@ -271,6 +271,7 @@ void Figure::save(const std::string & file) {
     gr_.Axis();
   }
 
+  gr_.Box();
   // Plot
   for(auto &p : plots_) {
     p->plot(&gr_);
