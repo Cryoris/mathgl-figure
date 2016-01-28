@@ -11,6 +11,7 @@
 
 namespace mgl {
 
+
 void print(const mglData& d)
 {
   for (long i = 0; i < d.GetNx(); ++i){
@@ -184,8 +185,10 @@ void Figure::plot(const yVector& y, const std::string& style, const std::string&
 /* plot x,y data
  * PRE : -
  * POST: add x-y to plot queue with given style (must be given!) and set legend (optional) */
-template <typename xVector, typename yVector> // same syntax for Eigen::VectorXd and std::vector<T>
-void Figure::plot(const xVector& x, const yVector& y, const std::string& style, const std::string& legend)
+// same syntax for Eigen::VectorXd and std::vector<T>
+template <typename xVector, typename yVector>
+typename std::enable_if<!std::is_same<typename std::remove_pointer<typename std::decay<yVector>::type>::type, char >::value, void>::type
+Figure::plot(const xVector& x, const yVector& y, const std::string& style, const std::string& legend)
 {
   if (x.size() != y.size()){
     throw std::length_error("In function Figure::plot(): Vectors must have same sizes!");
@@ -253,7 +256,7 @@ void Figure::save(const std::string & file) {
     gr_.SubPlot(1, 1, 0, subPlotType.c_str()); // with 3d plots we need the margins
     gr_.SetRanges(ranges_[0], ranges_[1], ranges_[2], ranges_[3]);
   }
-  gr_.Box();
+
   // Set label - before setting curvilinear because MathGL is vulnerable to errors otherwise
   gr_.Label('x', xMglLabel_.str_.c_str(), xMglLabel_.pos_);
   gr_.Label('y', yMglLabel_.str_.c_str(), yMglLabel_.pos_);
@@ -270,7 +273,7 @@ void Figure::save(const std::string & file) {
   if (axis_){
     gr_.Axis();
   }
-
+  gr_.Box();
   // Plot
   for(auto &p : plots_) {
     p->plot(&gr_);
