@@ -273,6 +273,7 @@ void Figure::save(const std::string & file) {
   if (axis_){
     gr_.Axis();
   }
+
   gr_.Box();
   // Plot
   for(auto &p : plots_) {
