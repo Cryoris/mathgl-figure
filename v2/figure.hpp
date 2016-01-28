@@ -21,8 +21,10 @@ namespace mgl {
  * Make mglData from std::vector
  */
 template<typename Scalar>
-mglData make_mgldata(const std::vector<Scalar>& v) {
-  return mglData(v.data(), v.size());
+typename std::enable_if<std::is_arithmetic<Scalar>::value, mglData>::type
+make_mgldata(const std::vector<Scalar>& v) {
+  std::vector<double> vd(v.begin(), v.end());
+  return mglData(vd.data(), vd.size());
 }
 
 //!
@@ -65,7 +67,8 @@ public:
   void plot(const yVector& y, const std::string &style, const std::string& legend = "");
 
   template <typename xVector, typename yVector>
-  void plot(const xVector& x, const yVector& y, const std::string& style, const std::string& legend = "");
+  typename std::enable_if<!std::is_same<typename std::remove_pointer<typename std::decay<yVector>::type>::type, char >::value, void>::type
+  plot(const xVector& x, const yVector& y, const std::string& style, const std::string& legend = "");
 
   template <typename xVector, typename yVector, typename zVector>
   void plot3(const xVector& x, const yVector& y, const zVector& z, const std::string &style, const std::string& legend = "");

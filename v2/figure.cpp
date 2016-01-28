@@ -11,6 +11,7 @@
 
 namespace mgl {
 
+
 void print(const mglData& d)
 {
   for (long i = 0; i < d.GetNx(); ++i){
@@ -232,8 +233,10 @@ void Figure::plot(const yVector& y, const std::string& style, const std::string&
 /* plot x,y data
  * PRE : -
  * POST: add x-y to plot queue with given style (must be given!) and set legend (optional) */
-template <typename xVector, typename yVector> // same syntax for Eigen::VectorXd and std::vector<T>
-void Figure::plot(const xVector& x, const yVector& y, const std::string& style, const std::string& legend)
+// same syntax for Eigen::VectorXd and std::vector<T>
+template <typename xVector, typename yVector>
+typename std::enable_if<!std::is_same<typename std::remove_pointer<typename std::decay<yVector>::type>::type, char >::value, void>::type
+Figure::plot(const xVector& x, const yVector& y, const std::string& style, const std::string& legend)
 {
   if (x.size() != y.size()){
     std::cerr << "In function Figure::plot(): Vectors must have same sizes!";
@@ -296,7 +299,6 @@ void Figure::save(const std::string& file) {
   if (has_3d_){
     gr_.SetRanges(ranges_[0], ranges_[1], ranges_[2], ranges_[3], zranges_[0], zranges_[1]);
     gr_.Rotate(60, 30);
-    gr_.Box();
   }
   else {
     gr_.SubPlot(1, 1, 0, subPlotType.c_str()); // with 3d plots we need the margins
@@ -314,12 +316,13 @@ void Figure::save(const std::string& file) {
   if (grid_){
     gr_.Grid(gridType_.c_str() , gridCol_.c_str());
   }
- 
+
   // Add axis
   if (axis_){
     gr_.Axis();
   }
-  
+
+  gr_.Box();
   // Plot
   for(auto &p : plots_) {
     p->plot(&gr_);
