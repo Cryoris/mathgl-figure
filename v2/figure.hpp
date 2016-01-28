@@ -1,14 +1,16 @@
 # pragma once
 
 # include <iostream>
-# include <mgl2/mgl.h>
 # include <memory>
-# include <Eigen/Dense>
 # include <array>
 # include <utility>
 # include <stdexcept>
 # include <cassert>
-# include <memory>
+
+# include "FigureConfig.hpp"
+# if FIG_HAS_EIGEN
+  # include <Eigen/Dense>
+# endif
 
 # include "MglPlot.hpp"
 # include "MglLabel.hpp"
@@ -31,6 +33,7 @@ make_mgldata(const std::vector<Scalar>& v) {
 /*!
  * Make mglData from Eigen::Vector or Eigen::RowVector
  */
+# if FIG_HAS_EIGEN
 template<typename Derived>
 mglData make_mgldata(const Eigen::MatrixBase<Derived>& vec) {
   assert(vec.rows() == 1 || vec.cols() == 1);
@@ -46,6 +49,7 @@ mglData make_mgldata(const Eigen::MatrixBase<Derived>& vec) {
   }
   return mglData(v.data(), v.size());
 }
+# endif
 
 class Figure {
 public:
