@@ -76,7 +76,7 @@ int main()
   }
   Eigen::VectorXd u = Eigen::VectorXd::LinSpaced(500, 1, 10),
                   v = ( (0.2*u.array()).cos().exp() ).matrix();
-  Figure fig;
+  mgl::Figure fig;
   fig.plot(x, y, " +r", "Sample Data");
   fig.plot(u, v, "b", "Function");
   fig.legend();
@@ -108,12 +108,12 @@ void grid( const bool& on = true,
 %
 \textbf{Examples:}
 \begin{lstlisting}
-  Figure fig;
+  mgl::Figure fig;
   fig.plot(x, y, "r");
   fig.grid(false); // unset grid
   fig.save("plot.eps");
 
-  Figure fig;
+  mgl::Figure fig;
   fig.plot(x, y, "r");
   fig.grid(true, "!", "b"); // blue fine mesh
   fig.save("plot.eps");
@@ -131,12 +131,12 @@ void xlabel( const std::string& label,
 %
 \textbf{Examples:}
 \begin{lstlisting}
-  Figure fig;
+  mgl::Figure fig;
   fig.plot(x, y, "+g"); // '+g' equals matlab/python '+-g'
   fig.xlabel("Linear x axis");
   fig.save("plot.eps");
 
-  Figure fig;
+  mgl::Figure fig;
   fig.xlabel("Logarithmix x axis"); // no restricitons on call order
   fig.setlog(true, true);
   fig.plot(x, y, "+g");
@@ -179,7 +179,7 @@ void setlog( const bool& logx = false,
 %
 \textbf{Examples:}
 \begin{lstlisting}
-  Figure fig;
+  mgl::Figure fig;
   fig.setlog(true, false); // -> semilogx
   fig.plot(x0, y0, "b"); 
   fig.setlog(false, true); // -> semilogy
@@ -188,7 +188,7 @@ void setlog( const bool& logx = false,
   fig.plot(x2, y2, "g");
   fig.save("plot.eps"); // ATTENTION: all plots will have been plotted in loglog-scale 
 
-  Figure fig;
+  mgl::Figure fig;
   fig.plot(x, y, "b");
   fig.save("plot.eps"); // -> default (= linear) scaling
 \end{lstlisting}
@@ -217,15 +217,15 @@ Furthermore \texttt{x} and \texttt{y} must have same length. Also note that the 
 %
 \textbf{Examples:}
 \begin{lstlisting}
-  Figure fig;
+  mgl::Figure fig;
   fig.plot(x, y, "b");
   fig.save("data.eps");
 
-  Figure fig;
+  mgl::Figure fig;
   fig.plot(x, y); // Not OK - style missing
   fig.save("data.eps");
 
-  Figure fig;
+  mgl::Figure fig;
   fig.plot(x, y, " *r", "Data w/ red dots"); // ' *r' equals matlab/python 'r*'
   fig.save("data.eps");
 \end{lstlisting}
@@ -245,7 +245,7 @@ void plot3( const xVector& x,
 %
 \textbf{Examples:}
 \begin{lstlisting}
-  Figure fig;
+  mgl::Figure fig;
   fig.plot3(x, y, z, "b");
   fig.save("trajectories.eps");
 \end{lstlisting}
@@ -263,13 +263,13 @@ void fplot( const std::string& function,
 %
 \textbf{Examples:}
 \begin{lstlisting}
-  Figure fig;
+  mgl::Figure fig;
   fig.fplot("3*x^2 + 4.5/x + exp(x)", "b");
   fig.fplot("exp(cos(pi*x))","r","some periodic function");
   fig.ranges(0.5, 2, 0, 5); // be sure to set ranges for fplot!
   fig.save("plot.eps");
 
-  Figure fig;
+  mgl::Figure fig;
   fig.plot(x, y, "b", "Benchmark");
   fig.fplot("x^2", "k;", "\\ O(x^2)");
   // here we don't set the ranges as it uses the range given by the x,y data
@@ -291,15 +291,15 @@ void ranges( const double& xMin,
 %
 \textbf{Examples:}
 \begin{lstlisting}
-  Figure fig;
+  mgl::Figure fig;
   fig.ranges(-1,1,-1,1);
   fig.plot(x, y, "b");
 
-  Figure fig;
+  mgl::Figure fig;
   fig.plot(x, y, "b");
   fig.ranges(0, 2.3, 4, 5); // ranges can be called before or after 'plot'
 
-  Figure fig;
+  mgl::Figure fig;
   fig.ranges(-1, 1, 0, 5);
   fig.setlog(true, true); // will run but MathGL will throw a warning 
   fig.plot(x, y, "b");
@@ -317,13 +317,13 @@ void save( const std::string& file )
 %
 \textbf{Examples:}
 \begin{lstlisting}
-  Figure fig;
+  mgl::Figure fig;
   fig.save("plot.eps"); // OK
 
-  Figure fig;
+  mgl::Figure fig;
   fig.save("plot"); // OK - will be saved as plot.eps
 
-  Figure fig;
+  mgl::Figure fig;
   fig.save("plot.png"); // OK - but needs -lpng flag!
 \end{lstlisting}
 
