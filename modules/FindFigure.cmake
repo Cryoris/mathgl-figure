@@ -1,28 +1,61 @@
 # ================================= FindFigure.cmake =======================================
 # once finshed the following variables will be initialized:
-#   FIGURE_INCLUDE_DIR : directory which contains the Figure header ( figure.hpp )
-#   FIGURE_LIBRARY     : Figure library ( libFigure.a )
-#   FIGURE_LIBRARY_DIR : directory which contains the Figure library ( libFigure.a )
+#   FIGURE_INCLUDE_DIR : directory which contains all Figure files
 # ==========================================================================================
 #   Typical usage:    find_package( Figure REQUIRED)
 #                     include_directories( ${FIGURE_INCLUDE_DIR} )
 #                     add_executable( main my_main_file.cpp )
-#                     target_link_libraries( main ${FIGURE_LIBRARY} )
 # ==========================================================================================
 
-# get path to figure header
-find_path(FIGURE_INCLUDE_DIR NAMES figure.hpp DOC "Figure header")
-if (FIGURE_INCLUDE_DIR)
-  message("-- Found Figure header in: ${FIGURE_INCLUDE_DIR}")
-else ()
-  message("FATAL -- could not find header of Figure ( figure.hpp ). Did you try installing it with sudo make install?")
+if ( DEBUG )
+  message( STATUS "Running FindFigure.cmake with DEBUG option .." )
 endif()
 
-# find libFigure.a
-find_library(FIGURE_LIBRARY NAMES libFigure.a DOC "Figure library")
-if (FIGURE_LIBRARY)
-  get_filename_component(FIGURE_LIBRARY_DIR ${FIGURE_LIBRARY} PATH)
-  message("-- Found Figure library in: ${FIGURE_LIBRARY_DIR}")
+# get paths to figure files
+set( DEFAULT_PATH ${CMAKE_INSTALL_PREFIX}/include/figure )
+find_path( FIGURE_HPP NAMES figure.hpp PATHS ${DEFAULT_PATH} DOC "Figure header" )
+find_path( FIGURE_CPP NAMES figure.hpp PATHS ${DEFAULT_PATH} DOC "Figure source" )
+find_path( FIGURE NAMES Figure PATHS ${DEFAULT_PATH} DOC "Figure include" )
+find_path( FIGURECONFIG_HPP NAMES FigureConfig.hpp PATHS ${DEFAULT_PATH} DOC "Figure config" )
+
+find_path( MGL_LABEL_HPP NAMES MglLabel.hpp PATHS ${DEFAULT_PATH} DOC "MglLabel" )
+find_path( MGL_PLOT_HPP NAMES MglPlot.hpp PATHS ${DEFAULT_PATH} DOC "MglPlot" )
+
+set( FIGURE_PATHS ${FIGURE_HPP} 
+                  ${FIGURE_CPP}
+                  ${FIGURE}
+                  ${FIGURECONFIG_HPP}
+                  ${MGL_LABEL_HPP}
+                  ${MGL_PLOT_HPP}
+                  )
+
+if ( DEBUG )
+  message( STATUS "Needed files are: figure.hpp figure.cpp Figure FigureConfig.hpp MglLabel.hpp MglPlot.hpp" )
+endif()
+
+# check if the files are all in the correct place
+set( PATHS_ARE_VALID true )
+foreach( FILE_PATH ${FIGURE_PATHS} )
+  if( NOT ${FILE_PATH} STREQUAL ${FIGURE} ) 
+    set( PATHS_ARE_VALID false )
+
+    if ( DEBUG ) # this will print which file exactly wasnt found
+      message( STATUS "${FILE_PATH}" )
+    endif()
+  
+  endif()
+endforeach()
+
+# if all filepaths are valid set FIGURE_INCLUDE_DIR, otherwise throw error/warning
+if( PATHS_ARE_VALID )
+  message( STATUS "Found Figure in ${FIGURE}" )
+  set( FIGURE_INCLUDE_DIR ${FIGURE} )
 else()
-  message("FATAL -- could not find library of Figure ( libFigure.a ). Did you try installing it with sudo make install?")
+  if( Figure_REQUIRED )
+    message(FATAL "Couldn't find all necessary files for Figure, maybe try (re-)installing with administrator rights?")
+    message("   Run cmake with the '-DDEBUG=1' option for more information on which files are missing.")
+  else()
+    message(STATUS "Couldn't find all necessary files for Figure, maybe try (re-)installing with administrator rights?")
+    message("   Run cmake with the '-DDEBUG=1' option for more information on which files are missing.")
+  endif()
 endif()
