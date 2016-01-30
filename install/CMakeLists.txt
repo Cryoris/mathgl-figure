@@ -1,25 +1,24 @@
 # to use this Figure library :
-# include the directory containing the files figure.cpp and figure.hpp and modify your CMakeLists.txt as follows:
-#                 add_library(Figure figure.cpp)
+#                 find_package( FIGURE REQUIRED )
+#                 include_directories( ${FIGURE_INCLUDE_DIR} )
 #                 add_executable(exec_name exec_source.cpp)
-#                 target_link_libraries(exec_name Figure)
 
-cmake_minimum_required(VERSION 2.8)
-project(FigureClass)
+cmake_minimum_required( VERSION 2.8 )
+project( FigureClass )
 
-add_definitions(-Wall -std=gnu++11 -fext-numeric-literals)
+set( SRC ${CMAKE_CURRENT_SOURCE_DIR}/../src/ )
 
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../modules)
-find_package(Eigen3 REQUIRED)
-include_directories(${EIGEN3_INCLUDE_DIR})
+set( CORE_FILES ${SRC}/figure.hpp
+                ${SRC}/figure.cpp
+                ${SRC}/FigureConfig.hpp
+                ${SRC}/Figure
+                )
 
-find_package(MathGL2 2.0.0 REQUIRED)
-include_directories(${MATHGL2_INCLUDE_DIRS})
+set( UTILITY_FILES ${SRC}/MglLabel.hpp
+                   ${SRC}/MglPlot.hpp
+                   )
 
-add_library(Figure STATIC ${CMAKE_CURRENT_SOURCE_DIR}/../figure.cpp)
-target_link_libraries(Figure ${MATHGL2_LIBRARIES})
 
-install(TARGETS Figure
-        ARCHIVE DESTINATION lib
-        LIBRARY DESTINATION lib)
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../figure.hpp DESTINATION include)
+set( TARGET_FILES ${CORE_FILES} ${UTILITY_FILES} )
+
+install( FILES ${TARGET_FILES} DESTINATION include/figure )
