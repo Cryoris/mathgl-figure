@@ -26,7 +26,7 @@ class MglStyle {
     template <class Container>
     MglStyle(const Container& already_used);
 
-    std::string operator()();
+    std::string get_next();
 
     void eliminate (const std::string& already_used);
 
@@ -72,11 +72,11 @@ MglStyle::MglStyle (const Container& already_used_cont)
  }
 }
 
-std::string MglStyle::operator()() 
+std::string MglStyle::get_next ()
 {
   // if all available styles have been used start from the beginning
   if (styles_.size() == 0) {
-    get_new(styles_)
+    get_new(styles_);
   }
   std::string next = styles_[0];
   styles_.pop_front();

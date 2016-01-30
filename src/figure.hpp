@@ -14,6 +14,7 @@
 
 # include "MglPlot.hpp"
 # include "MglLabel.hpp"
+# include "MglStyle.hpp"
 # include <mgl2/mgl.h>
 
 namespace mgl {
@@ -68,16 +69,16 @@ public:
   void legend(const double& xPos = 1, const double& yPos = 1);
 
   template <typename yVector>
-  MglPlot& plot(const yVector& y, const std::string &style = "b-");
+  MglPlot& plot(const yVector& y, std::string style = "");
 
   template <typename xVector, typename yVector>
   typename std::enable_if<!std::is_same<typename std::remove_pointer<typename std::decay<yVector>::type>::type, char >::value, MglPlot&>::type
-  plot(const xVector& x, const yVector& y, const std::string& style = "b-");
+  plot(const xVector& x, const yVector& y, std::string style = "");
 
   template <typename xVector, typename yVector, typename zVector>
-  MglPlot& plot3(const xVector& x, const yVector& y, const zVector& z, const std::string &style = "b-");
+  MglPlot& plot3(const xVector& x, const yVector& y, const zVector& z, std::string style = "");
 
-  MglPlot& fplot(const std::string& function, const std::string &style = "b-");
+  MglPlot& fplot(const std::string& function, std::string style = "");
 
   void ranges(const double& xMin, const double& xMax, const double& yMin, const double& yMax);
 
@@ -107,6 +108,7 @@ private:
   std::string title_;
   std::string xFunc_, yFunc_, zFunc_;
   MglLabel xMglLabel_, yMglLabel_;
+  MglStyle styles_;
   double fontSizePT_; // font size in PT
   int figHeight_, figWidth_;
   std::vector<std::unique_ptr<MglPlot> > plots_;

@@ -37,6 +37,7 @@ Figure::Figure()
           std::numeric_limits<double>::max(), std::numeric_limits<double>::lowest()}),
     zranges_({std::numeric_limits<double>::max(), std::numeric_limits<double>::lowest()}),
     autoRanges_(true),
+    styles_(MglStyle()),
     fontSizePT_(6),
     figHeight_(800),
     figWidth_(800)
@@ -99,11 +100,18 @@ void Figure::legend(const double& xPos, const double& yPos)
 /* plot a function given by a string
  * PRE : proper format of the input, e.g.: "3*x^2 + exp(x)", see documentation for more details
  * POST: plot the function in given style */
-MglPlot& Figure::fplot(const std::string& function, const std::string& style)
+MglPlot& Figure::fplot(const std::string& function, std::string style)
 {
 #if NDEBUG
   std::cout << "Called fplot!\n";
 #endif
+
+  if (style.size() == 0) {
+    style = styles_.get_next();
+  }
+  else {
+    styles_.eliminate(style);
+  }
 
   plots_.emplace_back(std::unique_ptr<MglFPlot>(new MglFPlot(function, style)));
   return *plots_.back().get();
@@ -232,7 +240,7 @@ void Figure::title(const std::string& text)
  * PRE : -
  * POST: add (range(1, length(y)))-y to plot queue with given style (must be given!) and set legend (optional) */
 template <typename yVector>
-MglPlot& Figure::plot(const yVector& y, const std::string& style)
+MglPlot& Figure::plot(const yVector& y, std::string style)
 {
   std::vector<double> x(y.size());
   std::iota(x.begin(), x.end(), 1);
@@ -245,7 +253,7 @@ MglPlot& Figure::plot(const yVector& y, const std::string& style)
 // same syntax for Eigen::VectorXd and std::vector<T>
 template <typename xVector, typename yVector>
 typename std::enable_if<!std::is_same<typename std::remove_pointer<typename std::decay<yVector>::type>::type, char >::value, MglPlot&>::type
-Figure::plot(const xVector& x, const yVector& y, const std::string& style)
+Figure::plot(const xVector& x, const yVector& y, std::string style)
 {
   if (x.size() != y.size()){
     std::cerr << "In function Figure::plot(): Vectors must have same sizes!";
@@ -257,12 +265,20 @@ Figure::plot(const xVector& x, const yVector& y, const std::string& style)
   if(autoRanges_){
     setRanges(xd, yd, 0.);
   }
+  
+  if (style.size() == 0) {
+    style = styles_.get_next();
+  }
+  else {
+    styles_.eliminate(style);
+  }
+
   plots_.emplace_back(std::unique_ptr<MglPlot2d>(new MglPlot2d(xd, yd, style)));
   return *plots_.back().get();
 }
 
 template <typename xVector, typename yVector, typename zVector>
-MglPlot& Figure::plot3(const xVector& x, const yVector& y, const zVector& z, const std::string& style)
+MglPlot& Figure::plot3(const xVector& x, const yVector& y, const zVector& z, std::string style)
 {
 
   has_3d_ = true; // needed to set zranges in save-function and call mgl::Rotate
@@ -278,6 +294,14 @@ MglPlot& Figure::plot3(const xVector& x, const yVector& y, const zVector& z, con
   if(autoRanges_){
     setRanges(xd, yd, zd);
   }
+
+  if (style.size() == 0) {
+    style = styles_.get_next();
+  }
+  else {
+    styles_.eliminate(style);
+  }
+
   plots_.emplace_back(std::unique_ptr<MglPlot3d>(new MglPlot3d(xd, yd, zd, style)));
   return *plots_.back().get();
 }
