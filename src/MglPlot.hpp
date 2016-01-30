@@ -28,9 +28,9 @@ public:
   MglPlot& width(int w) {
     w = w < 0 ? 0 : (w > 9 ? 9 : w);
     if(style_.size() == 3)
-      style_[3] = '0' + w;
+      style_[3] = char( '0' + w );
     else
-      style_ += {'0' + w};
+      style_ += {char( '0' + w )};
     return *this;
   }
 
