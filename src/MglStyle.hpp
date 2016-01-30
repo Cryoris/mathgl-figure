@@ -36,8 +36,8 @@ class MglStyle {
 
 void MglStyle::get_new (std::deque<std::string>& new_deque) 
 {
-  std::deque<std::string> colors = { "b", "r", "g", "c", "m" },
-                        linetypes = { "-", ":", ";", "|" };
+  std::deque<std::string> colors = { "b", "r", "g", "c", "m", "y", "G", "p", "o", "k", "n" },
+                        linetypes = { "-", ":", ";", "|", "j", "i", "=" };
   crossjoin(colors, linetypes, new_deque);
 }
 
