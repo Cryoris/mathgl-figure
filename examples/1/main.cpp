@@ -1,7 +1,7 @@
 #include <vector>
 #include <cmath>
 #include <Eigen/Dense>
-#include "../../Figure"
+#include "../../src/Figure"
 
 int main() {
 

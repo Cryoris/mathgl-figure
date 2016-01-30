@@ -1,5 +1,5 @@
 # include <Eigen/Dense>
-# include "../../figure.hpp"
+# include "../../src/Figure"
 
 int main(){
   
@@ -10,9 +10,9 @@ int main(){
     z[i + 50] = -i*std::exp(std::sqrt(std::abs(i))*std::sin(0.5*i));
   }
 
-  Figure fig;
-  fig.plot(t, y, "b0", "f(x)");
-  fig.plot(t, z, "r0", "g(x)");
+  mgl::Figure fig;
+  fig.plot(t, y, "b0").label("f(x)");
+  fig.plot(t, z, "r0").label("g(x)");
  // fig.title("Some functions");
   fig.legend();
   fig.save("plot-1.eps");
@@ -42,7 +42,7 @@ int main(){
   Eigen::VectorXd x = Eigen::VectorXd::LinSpaced(500, 1, 20);
   Eigen::VectorXd fx = (10*x.array().exp()).matrix();
 
-  Figure fig2;
+  mgl::Figure fig2;
   fig2.setlog(false, true);
   fig2.ylabel("Some long y Axis label");
   fig2.plot(x, fx, "g0");

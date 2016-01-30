@@ -1,5 +1,5 @@
 # include <Eigen/Dense>
-# include "../../Figure"
+# include "../../src/Figure"
 
 int main()
 {
@@ -8,7 +8,7 @@ int main()
   Eigen::VectorXd y = l.array().sin().matrix();
 
   mgl::Figure fig;
-  fig.plot3(x, y, l, "b");
+  fig.plot3(x, y, l).label("b");
   fig.save("3d.eps");
 
   return 0;
