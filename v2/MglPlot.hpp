@@ -8,12 +8,31 @@ namespace mgl {
 class MglPlot {
 public:
 
-  MglPlot(const std::string & style, const std::string& legend = "")
-    : style_(style)
-    , legend_(legend)
+  MglPlot(const std::string & style)
+    : style_{style}
+    , legend_{""}
   {}
   virtual void plot(mglGraph* gr) = 0;
   virtual bool is_3d() = 0;
+
+  MglPlot& label(const std::string &l) {
+    legend_ = l;
+    return *this;
+  }
+
+  MglPlot& style(const std::string &s) {
+    style_ = s;
+    return *this;
+  }
+
+  MglPlot& width(int w) {
+    w = w < 0 ? 0 : (w > 9 ? 9 : w);
+    if(style_.size() == 3)
+      style_[3] = '0' + w;
+    else
+      style_ += {'0' + w};
+    return *this;
+  }
 
 protected:
   std::string style_;
@@ -23,8 +42,8 @@ protected:
 class MglPlot2d : public MglPlot {
 public:
 
-  MglPlot2d(const mglData& xd, const mglData& yd, const std::string &style, const std::string& legend="")
-    : MglPlot(style, legend)
+  MglPlot2d(const mglData& xd, const mglData& yd, const std::string &style)
+    : MglPlot(style)
     , xd_(xd)
     , yd_(yd)
   {}
@@ -46,8 +65,8 @@ private:
 class MglPlot3d : public MglPlot {
 public:
 
-  MglPlot3d(const mglData& xd, const mglData& yd, const mglData& zd, const std::string& style, const std::string& legend="")
-    : MglPlot(style, legend)
+  MglPlot3d(const mglData& xd, const mglData& yd, const mglData& zd, const std::string& style)
+    : MglPlot(style)
     , xd_(xd)
     , yd_(yd)
     , zd_(zd)
@@ -71,8 +90,8 @@ private:
 class MglFPlot : public MglPlot {
 public:
 
-  MglFPlot(const std::string & fplot_str, const std::string &style, const std::string& legend="")
-    : MglPlot(style, legend)
+  MglFPlot(const std::string & fplot_str, const std::string &style)
+    : MglPlot(style)
     , fplot_str_(fplot_str)
   {}
 

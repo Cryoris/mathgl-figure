@@ -91,13 +91,14 @@ void Figure::legend(const double& xPos, const double& yPos)
 /* plot a function given by a string
  * PRE : proper format of the input, e.g.: "3*x^2 + exp(x)", see documentation for more details
  * POST: plot the function in given style */
-void Figure::fplot(const std::string& function, const std::string& style, const std::string& legend)
+MglPlot& Figure::fplot(const std::string& function, const std::string& style)
 {
 #if NDEBUG
   std::cout << "Called fplot!\n";
 #endif
 
-  plots_.emplace_back(std::unique_ptr<MglFPlot>(new MglFPlot(function, style, legend)));
+  plots_.emplace_back(std::unique_ptr<MglFPlot>(new MglFPlot(function, style)));
+  return *plots_.back().get();
 }
 
 /* set ranges
@@ -114,7 +115,7 @@ void Figure::ranges(const double& xMin, const double& xMax, const double& yMin, 
 
 /* get minimal positive ( > 0 ) value of mglData
  * PRE : -
- * POST: minimal positive value of argument, 
+ * POST: minimal positive value of argument,
  *       std::numeric_limits<double>::max() if no positive value cotained,
  *       print a warning to std::cerr if a value <= 0 encountered         */
 double minPositive(const mglData& d)
@@ -134,7 +135,7 @@ double minPositive(const mglData& d)
   if (print_warning) {
     std::cerr << "* Figure - Warning * non-positive values of data will not appear on plot. \n";
   }
-    
+
   return result;
 }
 
@@ -223,11 +224,11 @@ void Figure::title(const std::string& text)
  * PRE : -
  * POST: add (range(1, length(y)))-y to plot queue with given style (must be given!) and set legend (optional) */
 template <typename yVector>
-void Figure::plot(const yVector& y, const std::string& style, const std::string& legend)
+MglPlot& Figure::plot(const yVector& y, const std::string& style)
 {
   std::vector<double> x(y.size());
   std::iota(x.begin(), x.end(), 1);
-  plot(x, y, style, legend);
+  return plot(x, y, style);
 }
 
 /* plot x,y data
@@ -235,8 +236,8 @@ void Figure::plot(const yVector& y, const std::string& style, const std::string&
  * POST: add x-y to plot queue with given style (must be given!) and set legend (optional) */
 // same syntax for Eigen::VectorXd and std::vector<T>
 template <typename xVector, typename yVector>
-typename std::enable_if<!std::is_same<typename std::remove_pointer<typename std::decay<yVector>::type>::type, char >::value, void>::type
-Figure::plot(const xVector& x, const yVector& y, const std::string& style, const std::string& legend)
+typename std::enable_if<!std::is_same<typename std::remove_pointer<typename std::decay<yVector>::type>::type, char >::value, MglPlot&>::type
+Figure::plot(const xVector& x, const yVector& y, const std::string& style)
 {
   if (x.size() != y.size()){
     std::cerr << "In function Figure::plot(): Vectors must have same sizes!";
@@ -248,11 +249,12 @@ Figure::plot(const xVector& x, const yVector& y, const std::string& style, const
   if(autoRanges_){
     setRanges(xd, yd, 0.);
   }
-  plots_.emplace_back(std::unique_ptr<MglPlot2d>(new MglPlot2d(xd, yd, style, legend)));
+  plots_.emplace_back(std::unique_ptr<MglPlot2d>(new MglPlot2d(xd, yd, style)));
+  return *plots_.back().get();
 }
 
 template <typename xVector, typename yVector, typename zVector>
-void Figure::plot3(const xVector& x, const yVector& y, const zVector& z, const std::string& style, const std::string& legend)
+MglPlot& Figure::plot3(const xVector& x, const yVector& y, const zVector& z, const std::string& style)
 {
 
   has_3d_ = true; // needed to set zranges in save-function and call mgl::Rotate
@@ -268,7 +270,8 @@ void Figure::plot3(const xVector& x, const yVector& y, const zVector& z, const s
   if(autoRanges_){
     setRanges(xd, yd, zd);
   }
-  plots_.emplace_back(std::unique_ptr<MglPlot3d>(new MglPlot3d(xd, yd, zd, style, legend)));
+  plots_.emplace_back(std::unique_ptr<MglPlot3d>(new MglPlot3d(xd, yd, zd, style)));
+  return *plots_.back().get();
 }
 
 /* save figure

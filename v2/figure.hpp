@@ -68,16 +68,16 @@ public:
   void legend(const double& xPos = 1, const double& yPos = 1);
 
   template <typename yVector>
-  void plot(const yVector& y, const std::string &style, const std::string& legend = "");
+  MglPlot& plot(const yVector& y, const std::string &style = "b-");
 
   template <typename xVector, typename yVector>
-  typename std::enable_if<!std::is_same<typename std::remove_pointer<typename std::decay<yVector>::type>::type, char >::value, void>::type
-  plot(const xVector& x, const yVector& y, const std::string& style, const std::string& legend = "");
+  typename std::enable_if<!std::is_same<typename std::remove_pointer<typename std::decay<yVector>::type>::type, char >::value, MglPlot&>::type
+  plot(const xVector& x, const yVector& y, const std::string& style = "b-");
 
   template <typename xVector, typename yVector, typename zVector>
-  void plot3(const xVector& x, const yVector& y, const zVector& z, const std::string &style, const std::string& legend = "");
+  MglPlot& plot3(const xVector& x, const yVector& y, const zVector& z, const std::string &style = "b-");
 
-  void fplot(const std::string& function, const std::string &style, const std::string& legend = "");
+  MglPlot& fplot(const std::string& function, const std::string &style = "b-");
 
   void ranges(const double& xMin, const double& xMax, const double& yMin, const double& yMax);
 
