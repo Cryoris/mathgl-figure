@@ -1,6 +1,6 @@
 # include <iostream>
 # include <Eigen/Dense>
-# include "../../Figure"
+# include "../../src/Figure"
 
 using namespace Eigen;
 
@@ -10,7 +10,7 @@ int main() {
 
   mgl::Figure fig;
   fig.setlog(true, true);
-  fig.plot(x, "b");
+  fig.plot(x);
   fig.save("4.eps");
 
   return 0;
