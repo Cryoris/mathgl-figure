@@ -36,7 +36,7 @@ class MglStyle {
 
 void MglStyle::get_new (std::deque<std::string>& new_deque) 
 {
-  std::deque<std::string> colors = { "b", "r", "g", "c", "m", "y", "G", "p", "o", "k", "n" },
+  std::deque<std::string> colors = { "b", "r", "g", "c", "m", "y", "G", "p", "q", "k", "n" },
                         linetypes = { "-", ":", ";", "|", "j", "i", "=" };
   crossjoin(colors, linetypes, new_deque);
 }
@@ -83,8 +83,73 @@ std::string MglStyle::get_next ()
   return next;
 }
 
+// sort string to default layout: <solid?><color><styleoption><linewidth>, as in "b:0", "r-1", " r*"
+// if parameters are missing choose default: solid -> "" (true), color -> 'b' , styleoption -> '-', linewidth -> '0'
+std::string normalized (const std::string& s) {
+    // get parameters
+    std::string solid = "",
+                color = "b", 
+                styleoption = "", 
+                linewidth = "0"; 
+
+    auto it = s.begin();
+
+    const std::string valid_colors = "bgrhwBGRHWcmypCMYkPlenuqLENUQ", // colors from MathGL documentation
+                      valid_styles = ".+x*sdo^v<>#-|l;=ji: AVKIDSOX_S"; // . to # -- markers, - to : -- linetypes, rest -- arrowstyles
+
+    // checking if solid or not
+    if (s[0] == ' ') {
+      solid = " ";
+      ++it; // first char doesnt need to be checked anymore
+    }
+    while (it != s.end()) {
+# if NDEBUG
+      std::cout << "In while loop with it = " << *it << "\n";
+# endif
+      // checking for numbers (linewidth parameter)
+      if (int(*it) >= 48 && int(*it) <= 57) {
+        linewidth = *it; 
+        ++it; continue;
+      }
+      // checking for characters (upper and lowercase (color parameter)
+      else if (std::find(valid_colors.begin(), valid_colors.end(), *it) != valid_colors.end()) { 
+        color = *it;
+        ++it; continue;
+      }
+      // check stylesoptions 
+      else if (std::find(valid_styles.begin(), valid_styles.end(), *it) != valid_styles.end()) {
+        styleoption += *it; // using += because styles like #+ or #* are valid
+        ++it; continue;
+      }
+      ++it;
+    }
+    // need to cover the case that no styleoption at all has been found
+    if (styleoption.size() == 0) {
+      styleoption = "-";
+    }
+
+    return (solid + color + styleoption + linewidth);
+}
+
+
 void MglStyle::eliminate (const std::string& already_used) {
-  auto it = std::find(styles_.begin(), styles_.end(), already_used);
+
+  std::string already_used_normalized = normalized(already_used);
+
+  // we only use linewidth 0 (or 1, they are the same) in the deque, so...
+  if (already_used_normalized[2] != '0' && already_used_normalized[2] != '1') {
+    return; // if the width is != 0 we dont even have to search for this style in our deque
+  } 
+  else {
+    already_used_normalized.erase(2); // if it is 0 we have to look for it
+  }
+
+  // we only must check for solid styles
+  if (already_used_normalized[0] == ' ') {
+    return;
+  }
+
+  auto it = std::find(styles_.begin(), styles_.end(), already_used_normalized);
   if (it != styles_.end()) {
     styles_.erase(it);
   }
