@@ -8,7 +8,7 @@
 \contentsline {subsection}{\numberline {2.5}setlog}{4}{subsection.2.5}
 \contentsline {subsection}{\numberline {2.6}plot}{5}{subsection.2.6}
 \contentsline {subsection}{\numberline {2.7}plot3}{5}{subsection.2.7}
-\contentsline {subsection}{\numberline {2.8}fplot}{6}{subsection.2.8}
+\contentsline {subsection}{\numberline {2.8}fplot}{5}{subsection.2.8}
 \contentsline {subsection}{\numberline {2.9}ranges}{6}{subsection.2.9}
 \contentsline {subsection}{\numberline {2.10}save}{7}{subsection.2.10}
 \contentsline {subsection}{\numberline {2.11}title}{7}{subsection.2.11}

@@ -77,8 +77,8 @@ int main()
   Eigen::VectorXd u = Eigen::VectorXd::LinSpaced(500, 1, 10),
                   v = ( (0.2*u.array()).cos().exp() ).matrix();
   mgl::Figure fig;
-  fig.plot(x, y, " +r", "Sample Data");
-  fig.plot(u, v, "b", "Function");
+  fig.plot(x, y, " +r").label("Sample Data");
+  fig.plot(u, v, "b").label("Function");
   fig.legend();
   fig.save("plot.eps");
   return 0;
@@ -109,12 +109,12 @@ void grid( const bool& on = true,
 \textbf{Examples:}
 \begin{lstlisting}
   mgl::Figure fig;
-  fig.plot(x, y, "r");
+  fig.plot(x, y);
   fig.grid(false); // unset grid
   fig.save("plot.eps");
 
   mgl::Figure fig;
-  fig.plot(x, y, "r");
+  fig.plot(x, y);
   fig.grid(true, "!", "b"); // blue fine mesh
   fig.save("plot.eps");
 \end{lstlisting}
@@ -132,14 +132,14 @@ void xlabel( const std::string& label,
 \textbf{Examples:}
 \begin{lstlisting}
   mgl::Figure fig;
-  fig.plot(x, y, "+g"); // '+g' equals matlab/python '+-g'
+  fig.plot(x, y, "g+"); // 'g+' equals matlab/python '+-g'
   fig.xlabel("Linear x axis");
   fig.save("plot.eps");
 
   mgl::Figure fig;
   fig.xlabel("Logarithmix x axis"); // no restricitons on call order
   fig.setlog(true, true);
-  fig.plot(x, y, "+g");
+  fig.plot(x, y, "g+");
   fig.save("plot.eps");
 \end{lstlisting}
 
@@ -164,7 +164,19 @@ void legend( const double& xPos = 1,
              const double& yPos = 1 )
 \end{lstlisting}
 %
-\textbf{Restrictions:} None. 
+\textbf{Restrictions:} None.  \\ \\
+%
+\textbf{Examples:}
+\begin{lstlisting}
+  mgl::Figure fig;
+  fig.plot(x0, y0).label("My Function");
+  fig.legend(); // 'activate' legend 
+  fig.save("plot");
+  
+  mgl::Figure fig;
+  fig.plot(x0, y0).label("My Function");
+  fig.save("plot"); // legend won't appear as legend() hasn't been called
+\end{lstlisting}
 
 \command{setlog}
 
@@ -181,15 +193,15 @@ void setlog( const bool& logx = false,
 \begin{lstlisting}
   mgl::Figure fig;
   fig.setlog(true, false); // -> semilogx
-  fig.plot(x0, y0, "b"); 
+  fig.plot(x0, y0); 
   fig.setlog(false, true); // -> semilogy
-  fig.plot(x1, y1, "r");
+  fig.plot(x1, y1);
   fig.setlog(true, true); // -> loglog
-  fig.plot(x2, y2, "g");
+  fig.plot(x2, y2);
   fig.save("plot.eps"); // ATTENTION: all plots will have been plotted in loglog-scale 
 
   mgl::Figure fig;
-  fig.plot(x, y, "b");
+  fig.plot(x, y);
   fig.save("plot.eps"); // -> default (= linear) scaling
 \end{lstlisting}
 
@@ -200,20 +212,18 @@ void setlog( const bool& logx = false,
 \begin{lstlisting}
 template <typename yVector>
 void plot( const yVector& y, 
-           const std::string& style, 
-           const std::string& legend = 0 )
+           const std::string& style = "" )
 \end{lstlisting}
 
 \begin{lstlisting}
 template <typename xVector, typename yVector>
 void plot( const xVector& x, 
            const yVector& y, 
-           const std::string& style, 
-           const std::string& legend = 0 ) 
+           const std::string& style = "" )
 \end{lstlisting}
 \textbf{Restrictions:} \texttt{xVector} and \texttt{yVector} must have a \texttt{size()} method, which returns the size of the vector 
 and a \texttt{data()} method, which returns a pointer to the first element in the vector. \\
-Furthermore \texttt{x} and \texttt{y} must have same length. Also note that the \texttt{style}-argument is required! \\ \\
+Furthermore \texttt{x} and \texttt{y} must have same length. \\ \\
 %
 \textbf{Examples:}
 \begin{lstlisting}
@@ -222,7 +232,7 @@ Furthermore \texttt{x} and \texttt{y} must have same length. Also note that the 
   fig.save("data.eps");
 
   mgl::Figure fig;
-  fig.plot(x, y); // Not OK - style missing
+  fig.plot(x, y); // OK - style is optional
   fig.save("data.eps");
 
   mgl::Figure fig;
@@ -238,15 +248,14 @@ template <typename xVector, typename yVector, typename zVector>
 void plot3( const xVector& x,
             const yVector& y,
             const zVector& z,
-            const std::string& style,
-            const std::string& legend = 0 )
+            const std::string& style = "" )
 \end{lstlisting}
 \textbf{Restrictions:} Same restrictions as in \texttt{plot} for two vectors, extended to \texttt{zVector}. \\ \\
 %
 \textbf{Examples:}
 \begin{lstlisting}
   mgl::Figure fig;
-  fig.plot3(x, y, z, "b");
+  fig.plot3(x, y, z);
   fig.save("trajectories.eps");
 \end{lstlisting}
 
@@ -256,22 +265,21 @@ void plot3( const xVector& x,
 \textbf{Definition:}
 \begin{lstlisting}
 void fplot( const std::string& function,
-            const std::string& style,
-            const std::string& legend = 0 )
+            const std::string& style = "" )
 \end{lstlisting}
 \textbf{Restrictions:} None. \\ \\
 %
 \textbf{Examples:}
 \begin{lstlisting}
   mgl::Figure fig;
-  fig.fplot("3*x^2 + 4.5/x + exp(x)", "b");
-  fig.fplot("exp(cos(pi*x))","r","some periodic function");
+  fig.fplot("3*x^2 + 4.5/x + exp(x)");
+  fig.fplot("exp(cos(pi*x))", "r").label("some periodic function");
   fig.ranges(0.5, 2, 0, 5); // be sure to set ranges for fplot!
   fig.save("plot.eps");
 
   mgl::Figure fig;
-  fig.plot(x, y, "b", "Benchmark");
-  fig.fplot("x^2", "k;", "\\ O(x^2)");
+  fig.plot(x, y, "b").label("Benchmark");
+  fig.fplot("x^2", "k;").label("\\ O(x^2)");
   // here we don't set the ranges as it uses the range given by the x,y data
   // and we use fplot to draw a reference line (O(x^2))
   fig.save("runtimes.eps"); 
