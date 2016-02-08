@@ -16,8 +16,8 @@ set( CORE_FILES ${SRC}/figure.hpp
 
 set( UTILITY_FILES ${SRC}/MglLabel.hpp
                    ${SRC}/MglPlot.hpp
+                   ${SRC}/MglStyle.hpp
                    )
-
 
 set( TARGET_FILES ${CORE_FILES} ${UTILITY_FILES} )
 
