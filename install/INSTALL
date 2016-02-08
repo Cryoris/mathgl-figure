@@ -1,6 +1,6 @@
 ===================== INSTALLATION OF FIGURE LIBRARY =====================
 
-1. Possibility (ADVISED):
+1. Possibility -- local installation:
 To install the Figure library correctly with CMake follow these steps:
 (Make sure you have CMake installed!)
 
@@ -15,15 +15,6 @@ Windows:
    - open a terminal with administrator rights
    - do the same as above but without the 'sudo'
 
-You're done now! Ignore the rest of this file.
+2. Possibility -- no installation:
 
-2. Possibility:
-In the directory where "figure.hpp" and "figure.cpp" are, do:
-
-1. $ ar ruc libFigure.a figure.hpp
-   $ ranlib libFigure.a
-
-2. Move libFigure.a to the directory where you keep your libraries (usually /usr/local/lib)
-   and figure.hpp to the directory of your includes (usually /usr/local/includes)
-
-You're done now.
+As this is a header only library it is enough to include the file called 'Figure' from the 'src' directory when you're compiling your projects.
