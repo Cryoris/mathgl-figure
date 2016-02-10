@@ -20,6 +20,7 @@ find_path( FIGURECONFIG_HPP NAMES FigureConfig.hpp PATHS ${DEFAULT_PATH} DOC "Fi
 
 find_path( MGL_LABEL_HPP NAMES MglLabel.hpp PATHS ${DEFAULT_PATH} DOC "MglLabel" )
 find_path( MGL_PLOT_HPP NAMES MglPlot.hpp PATHS ${DEFAULT_PATH} DOC "MglPlot" )
+find_path( MGL_STYLE_HPP NAMES MglStyle.hpp PATHS ${DEFAULT_PATH} DOC "MglStyle" )
 
 set( FIGURE_PATHS ${FIGURE_HPP} 
                   ${FIGURE_CPP}
@@ -27,10 +28,11 @@ set( FIGURE_PATHS ${FIGURE_HPP}
                   ${FIGURECONFIG_HPP}
                   ${MGL_LABEL_HPP}
                   ${MGL_PLOT_HPP}
+                  ${MGL_STYLE_HPP}
                   )
 
 if ( DEBUG )
-  message( STATUS "Needed files are: figure.hpp figure.cpp Figure FigureConfig.hpp MglLabel.hpp MglPlot.hpp" )
+  message( STATUS "Needed files are: figure.hpp figure.cpp Figure FigureConfig.hpp MglLabel.hpp MglPlot.hpp MglStyle.hpp" )
 endif()
 
 # check if the files are all in the correct place
