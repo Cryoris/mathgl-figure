@@ -12,15 +12,15 @@ if ( DEBUG )
 endif()
 
 # get paths to figure files
-set( DEFAULT_PATH ${CMAKE_INSTALL_PREFIX}/include/figure )
-find_path( FIGURE_HPP NAMES figure.hpp PATHS ${DEFAULT_PATH} DOC "Figure header" )
-find_path( FIGURE_CPP NAMES figure.hpp PATHS ${DEFAULT_PATH} DOC "Figure source" )
-find_path( FIGURE NAMES Figure PATHS ${DEFAULT_PATH} DOC "Figure include" )
-find_path( FIGURECONFIG_HPP NAMES FigureConfig.hpp PATHS ${DEFAULT_PATH} DOC "Figure config" )
+set( FIGURE_PATH_SUFFIX figure )
+find_path( FIGURE_HPP NAMES figure.hpp PATH_SUFFIXES ${FIGURE_PATH_SUFFIX} DOC "Figure header" )
+find_path( FIGURE_CPP NAMES figure.hpp PATH_SUFFIXES ${FIGURE_PATH_SUFFIX} DOC "Figure source" )
+find_path( FIGURE NAMES Figure PATH_SUFFIXES ${FIGURE_PATH_SUFFIX} DOC "Figure include" )
+find_path( FIGURECONFIG_HPP NAMES FigureConfig.hpp PATH_SUFFIXES ${FIGURE_PATH_SUFFIX} DOC "Figure config" )
 
-find_path( MGL_LABEL_HPP NAMES MglLabel.hpp PATHS ${DEFAULT_PATH} DOC "MglLabel" )
-find_path( MGL_PLOT_HPP NAMES MglPlot.hpp PATHS ${DEFAULT_PATH} DOC "MglPlot" )
-find_path( MGL_STYLE_HPP NAMES MglStyle.hpp PATHS ${DEFAULT_PATH} DOC "MglStyle" )
+find_path( MGL_LABEL_HPP NAMES MglLabel.hpp PATH_SUFFIXES ${FIGURE_PATH_SUFFIX} DOC "MglLabel" )
+find_path( MGL_PLOT_HPP NAMES MglPlot.hpp PATH_SUFFIXES ${FIGURE_PATH_SUFFIX} DOC "MglPlot" )
+find_path( MGL_STYLE_HPP NAMES MglStyle.hpp PATH_SUFFIXES ${FIGURE_PATH_SUFFIX} DOC "MglStyle" )
 
 set( FIGURE_PATHS ${FIGURE_HPP} 
                   ${FIGURE_CPP}
