@@ -2,6 +2,7 @@
 # include <utility> // pair
 # include <vector>
 # include <algorithm>
+# include <numeric>
 # include <functional>
 # include <sstream> // needed for title layout
 # include <limits>
@@ -9,6 +10,7 @@
 # include <memory>
 # include "MglPlot.hpp"
 # include "MglLabel.hpp"
+# include "MglStyle.hpp"
 # include "figure.hpp"
 
 namespace mgl {
