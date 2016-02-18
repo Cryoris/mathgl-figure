@@ -1,7 +1,12 @@
+# ifndef MGL_STYLE_H
+# define MGL_STYLE_H
+
 # include <deque>
 # include <string>
 # include <algorithm>
 # include <mgl2/mgl.h>
+
+namespace mgl {
 
 /* create cross join B x A, such that:
  * A = {0, 1}, B = {a, b, bc} 
@@ -154,3 +159,7 @@ void MglStyle::eliminate (const std::string& already_used) {
     styles_.erase(it);
   }
 }
+
+} // end namespace mgl
+
+#endif
