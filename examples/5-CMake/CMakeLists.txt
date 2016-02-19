@@ -11,5 +11,5 @@ find_package( Figure REQUIRED )
 
 include_directories( ${EIGEN_INCLUDE_DIR} ${MATHGL2_INCLUDE_DIRS} ${FIGURE_INCLUDE_DIR} )
 add_executable( main main.cpp )
-target_link_libraries( main ${MATHGL2_LIBRARIES} )
+target_link_libraries( main ${FIGURE_LIBRARY} ${MATHGL2_LIBRARIES} )
 

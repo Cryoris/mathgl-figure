@@ -1,5 +1,5 @@
 # include <Eigen/Dense>
-# include <Figure>
+# include <figure.hpp>
 
 int main () {
   Eigen::VectorXd t = Eigen::VectorXd::LinSpaced(5, 0, 1),
