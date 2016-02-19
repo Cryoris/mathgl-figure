@@ -11,7 +11,7 @@ namespace mgl {
 /* create cross join B x A, such that:
  * A = {0, 1}, B = {a, b, bc} 
  * => C = {0a, 1a, 0b, 1b, 0c, 1c}     */
-void crossjoin (const std::deque<std::string>& A, const std::deque<std::string>& B, std::deque<std::string>& res) 
+static void crossjoin (const std::deque<std::string>& A, const std::deque<std::string>& B, std::deque<std::string>& res) 
 {
   for (auto b : B) {
     for (auto a : A) {
@@ -22,18 +22,18 @@ void crossjoin (const std::deque<std::string>& A, const std::deque<std::string>&
 
 class MglStyle {
   public: 
-    void get_new (std::deque<std::string>& new_deque);
+    inline void get_new (std::deque<std::string>& new_deque);
 
-    MglStyle();
+    inline MglStyle();
 
-    MglStyle(const std::string& already_used);
+    inline MglStyle(const std::string& already_used);
 
     template <class Container>
     MglStyle(const Container& already_used);
 
-    std::string get_next();
+    inline std::string get_next();
 
-    void eliminate (const std::string& already_used);
+    inline void eliminate (const std::string& already_used);
 
   private:
     std::deque<std::string> styles_;
@@ -90,7 +90,7 @@ std::string MglStyle::get_next ()
 
 // sort string to default layout: <solid?><color><styleoption><linewidth>, as in "b:0", "r-1", " r*"
 // if parameters are missing choose default: solid -> "" (true), color -> 'b' , styleoption -> '-', linewidth -> '0'
-std::string normalized (const std::string& s) {
+static std::string normalized (const std::string& s) {
     // get parameters
     std::string solid = "",
                 color = "b", 

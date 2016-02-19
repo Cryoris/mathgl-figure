@@ -1,4 +1,5 @@
-# pragma once
+# ifndef FIGURE_H
+# define FIGURE_H
 
 # include <iostream>
 # include <memory>
@@ -114,4 +115,76 @@ private:
   std::vector<std::unique_ptr<MglPlot> > plots_;
 };
 
+/* plot y data
+ * PRE : -
+ * POST: add (range(1, length(y)))-y to plot queue with given style (must be given!) and set legend (optional) */
+template <typename yVector>
+MglPlot& Figure::plot(const yVector& y, std::string style)
+{
+  std::vector<double> x(y.size());
+  std::iota(x.begin(), x.end(), 1);
+  return plot(x, y, style);
+}
+
+/* plot x,y data
+ * PRE : -
+ * POST: add x-y to plot queue with given style (must be given!) and set legend (optional) */
+// same syntax for Eigen::VectorXd and std::vector<T>
+template <typename xVector, typename yVector>
+typename std::enable_if<!std::is_same<typename std::remove_pointer<typename std::decay<yVector>::type>::type, char >::value, MglPlot&>::type
+Figure::plot(const xVector& x, const yVector& y, std::string style)
+{
+  if (x.size() != y.size()){
+    std::cerr << "In function Figure::plot(): Vectors must have same sizes!";
+  }
+
+  mglData xd = make_mgldata(x);
+  mglData yd = make_mgldata(y);
+
+  if(autoRanges_){
+    setRanges(xd, yd, 0.);
+  }
+  
+  if (style.size() == 0) {
+    style = styles_.get_next();
+  }
+  else {
+    styles_.eliminate(style);
+  }
+
+  plots_.emplace_back(std::unique_ptr<MglPlot2d>(new MglPlot2d(xd, yd, style)));
+  return *plots_.back().get();
+}
+
+template <typename xVector, typename yVector, typename zVector>
+MglPlot& Figure::plot3(const xVector& x, const yVector& y, const zVector& z, std::string style)
+{
+
+  has_3d_ = true; // needed to set zranges in save-function and call mgl::Rotate
+
+  if (!(x.size() == y.size() && y.size() == z.size())){
+    std::cerr << "In function Figure::plot(): Vectors must have same sizes!";
+  }
+
+  mglData xd = make_mgldata(x);
+  mglData yd = make_mgldata(y);
+  mglData zd = make_mgldata(z);
+
+  if(autoRanges_){
+    setRanges(xd, yd, zd);
+  }
+
+  if (style.size() == 0) {
+    style = styles_.get_next();
+  }
+  else {
+    styles_.eliminate(style);
+  }
+
+  plots_.emplace_back(std::unique_ptr<MglPlot3d>(new MglPlot3d(xd, yd, zd, style)));
+  return *plots_.back().get();
+}
+
 } // end namespace
+
+# endif
