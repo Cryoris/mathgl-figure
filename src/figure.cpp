@@ -346,7 +346,7 @@ void Figure::save(const std::string& file) {
     p->plot(&gr_);
   }
 
- // Add legend
+  // Add legend
   if (legend_){
     gr_.Legend(legendPos_.first, legendPos_.second);
   }
