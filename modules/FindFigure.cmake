@@ -3,9 +3,10 @@
 #   FIGURE_INCLUDE_DIR : directory which contains all Figure files
 #   FIGURE_LIBRARY : libFigure.a
 # ==========================================================================================
-#   Typical usage:    find_package( Figure REQUIRED)
+#   Typical usage:    find_package( Figure REQUIRED )
 #                     include_directories( ${FIGURE_INCLUDE_DIR} )
 #                     add_executable( main my_main_file.cpp )
+#                     target_link_libraries( main Figure )
 # ==========================================================================================
 
 if ( DEBUG )
