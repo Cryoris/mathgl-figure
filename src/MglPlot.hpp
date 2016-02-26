@@ -1,6 +1,7 @@
 #ifndef MGL_PLOT_H
 #define MGL_PLOT_H
 
+#include <iostream>
 #include <mgl2/mgl.h>
 
 namespace mgl {
@@ -50,7 +51,11 @@ public:
 
   void plot(mglGraph * gr) {
     gr->Plot(xd_, yd_, style_.c_str());
-    gr->AddLegend(legend_.c_str(), style_.c_str());
+    // only add the legend-entry if there is one, otherwise we might end up
+    // with a legend-entry containing the line style but no description
+    if (legend_.size() > 0) { 
+      gr->AddLegend(legend_.c_str(), style_.c_str());
+    }
   }
 
   bool is_3d() {
@@ -74,7 +79,11 @@ public:
 
   void plot(mglGraph * gr) {
     gr->Plot(xd_, yd_, zd_, style_.c_str());
-    gr->AddLegend(legend_.c_str(), style_.c_str());
+    // only add the legend-entry if there is one, otherwise we might end up
+    // with a legend-entry containing the line style but no description
+    if (legend_.size() > 0) { 
+      gr->AddLegend(legend_.c_str(), style_.c_str());
+    }
   }
 
   bool is_3d() {
@@ -97,7 +106,11 @@ public:
 
   void plot(mglGraph * gr) {
     gr->FPlot(fplot_str_.c_str(), style_.c_str());
-    gr->AddLegend(legend_.c_str(), style_.c_str());
+    // only add the legend-entry if there is one, otherwise we might end up
+    // with a legend-entry containing the line style but no description
+    if (legend_.size() > 0) { 
+      gr->AddLegend(legend_.c_str(), style_.c_str());
+    }
   }
 
   bool is_3d() {
