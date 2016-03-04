@@ -1,7 +1,7 @@
 #include <vector>
 #include <cmath>
 #include <Eigen/Dense>
-#include "../../src/Figure"
+#include "figure.hpp"
 
 int main() {
 
@@ -18,7 +18,6 @@ int main() {
   }
 
   mgl::Figure fig;
-
   fig.plot(x, y1, "g-").label("e^{-x}");
   fig.plot(x, y2, "r|").label("e^{-1.5x}");
   fig.plot(x, y3, "b-").label("e^{-2x}").width(3);
@@ -32,6 +31,5 @@ int main() {
   fig.setFontSize(6);
 
   fig.save("plot.eps");
-
   return 0;
 }

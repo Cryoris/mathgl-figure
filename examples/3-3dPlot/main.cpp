@@ -1,5 +1,5 @@
 # include <Eigen/Dense>
-# include "../../src/Figure"
+# include "figure.hpp"
 
 int main()
 {

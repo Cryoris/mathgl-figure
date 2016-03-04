@@ -1,6 +1,6 @@
 # include <iostream>
 # include <Eigen/Dense>
-# include "../../src/Figure"
+# include <figure.hpp>
 
 using namespace Eigen;
 
@@ -11,7 +11,7 @@ int main() {
   mgl::Figure fig;
   fig.setlog(true, true);
   fig.plot(x);
-  fig.save("4.eps");
+  fig.save("logdata.eps");
 
   return 0;
 }

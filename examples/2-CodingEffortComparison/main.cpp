@@ -1,5 +1,5 @@
 # include <Eigen/Dense>
-# include "../../src/Figure"
+# include "figure.hpp"
 
 int main(){
   
@@ -13,7 +13,7 @@ int main(){
   mgl::Figure fig;
   fig.plot(t, y, "b0").label("f(x)");
   fig.plot(t, z, "r0").label("g(x)");
- // fig.title("Some functions");
+  fig.title("Some functions");
   fig.legend();
   fig.save("plot-1.eps");
 
@@ -36,7 +36,7 @@ int main(){
   gr.Label('y', "y Axis");
   gr.Grid("","h");
   gr.Axis();
-  gr.WriteEPS("plot-1.eps");
+  gr.WriteEPS("plot-alt.eps");
   */
 
   Eigen::VectorXd x = Eigen::VectorXd::LinSpaced(500, 1, 20);

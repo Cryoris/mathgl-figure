@@ -3,6 +3,7 @@
 \usepackage[T1]{fontenc}
 \usepackage[left=3cm, right=3cm]{geometry}
 \usepackage{graphicx}
+\usepackage{subcaption}
 \usepackage{listings}
 \usepackage{latexsym}
 \usepackage{amsfonts}
@@ -22,8 +23,10 @@
   commentstyle=\color{gray}\ttfamily,
   stringstyle=\color{Purple}\ttfamily,
   showstringspaces=false,
-  emph=[1]{std,vector,string,Eigen,VectorXd,bool,double,char,void},
+  emph=[1]{std,vector,string,Eigen,Dense,VectorXd,bool,double,char,void},
   emphstyle=[1]{\color{blue}},
+  moredelim=[is][\itshape]{[*}{*]}, % means: [* this will be highlighted in the code *] and this not. 
+  moredelim=[is][\color{red}]{[**}{**]}
 }
 
 
@@ -40,34 +43,16 @@
   \tableofcontents
 \vspace*{\fill}
 
-\newpage
 \newgeometry{bottom=2cm, left=3cm, right=3cm}
-\section{Installation}
 
-First of all note that this library needs MathGL - that's a plotting library with a vast amount of possibilities, options and plot types.
-The Figure class is only a nice interface for easy use of that particular library. \\
-You can get it at \url{http://mathgl.sourceforge.net/doc_en/Download.html#Download}. \\
-
-Follow the steps in the \texttt{INSTALL} file. \\
-In the directory of the \texttt{CMakeLists.txt} do: \\ \\
-Under Linux/Mac OS: \\
-\texttt{
-\indent   \$ mkdir build \\
-\indent   \$ cd build \\
-\indent   \$ cmake .. \\
-\indent   \$ sudo make install \\ \\
-}
-Under Windows: \\
-\indent    - open a terminal with administrator rights \\
-\indent    - do the same as above but without the \texttt{sudo} \\ \\
-%
-This installation requires CMake (\url{https://cmake.org/download/}). 
-The ``manual'' way of installing it is described in \texttt{INSTALL}.
-
-\subsection{Opening example}
+\section{Opening example}
 
 This short example code will show, how the Figure class can be used.
 \begin{lstlisting}
+# include <vector>
+# include <Eigen/Dense>
+# include <figure/figure.hpp>
+
 int main()
 {
   std::vector<double> x(10), y(10);
@@ -77,10 +62,10 @@ int main()
   Eigen::VectorXd u = Eigen::VectorXd::LinSpaced(500, 1, 10),
                   v = ( (0.2*u.array()).cos().exp() ).matrix();
   mgl::Figure fig;
-  fig.plot(x, y, " +r").label("Sample Data");
-  fig.plot(u, v, "b").label("Function");
-  fig.legend();
-  fig.save("plot.eps");
+  fig.[*plot*](x, y, " +r").[*label*]("Sample Data");
+  fig.[*plot*](u, v, "b").[*label*]("Function");
+  fig.[*legend*]();
+  fig.[*save*]("plot.eps");
   return 0;
 }
 \end{lstlisting}
@@ -92,8 +77,7 @@ int main()
 \end{figure}
 
 \restoregeometry
-\newpage
-\section{Commands}
+\section{Methods}
 
 \command{grid}
 
@@ -110,15 +94,29 @@ void grid( const bool& on = true,
 \begin{lstlisting}
   mgl::Figure fig;
   fig.plot(x, y);
-  fig.grid(false); // unset grid
+  fig.[**grid**](false); // unset grid
   fig.save("plot.eps");
 
   mgl::Figure fig;
   fig.plot(x, y);
-  fig.grid(true, "!", "b"); // blue fine mesh
+  fig.[**grid**](true, "!", "h"); // gray fine mesh
   fig.save("plot.eps");
 \end{lstlisting}
 
+\begin{figure}[h]
+  \centering
+  \begin{subfigure}[hb]{.32\linewidth}
+    \includegraphics[width=\textwidth]{./examples_from_doc/grid/grid_1.eps}
+  \end{subfigure}
+    \hspace{2cm}
+  \begin{subfigure}[hb]{.32\linewidth}
+    \includegraphics[width=\textwidth]{./examples_from_doc/grid/grid_2.eps}
+  \end{subfigure}
+\end{figure}
+
+%%%%%%%%%
+\newpage
+%%%%%%%%%
 \command{xlabel}
 
 \textbf{Definition:}
@@ -133,17 +131,27 @@ void xlabel( const std::string& label,
 \begin{lstlisting}
   mgl::Figure fig;
   fig.plot(x, y, "g+"); // 'g+' equals matlab/python '+-g'
-  fig.xlabel("Linear x axis");
+  fig.[**xlabel**]("Linear x axis");
   fig.save("plot.eps");
 
   mgl::Figure fig;
-  fig.xlabel("Logarithmix x axis"); // no restricitons on call order
+  fig.[**xlabel**]("Logarithmix x axis"); // no restricitons on call order
   fig.setlog(true, true);
   fig.plot(x, y, "g+");
   fig.save("plot.eps");
 \end{lstlisting}
 
-\newpage
+\begin{figure}[h]
+  \centering
+  \begin{subfigure}[hb]{.32\linewidth}
+    \includegraphics[width=\textwidth]{./examples_from_doc/xlabel/xlabel_1.eps}
+  \end{subfigure}
+  \hspace{2cm}
+  \begin{subfigure}[hb]{.32\linewidth}
+    \includegraphics[width=\textwidth]{./examples_from_doc/xlabel/xlabel_2.eps}
+  \end{subfigure}
+\end{figure}
+
 \command{ylabel}
 
 \textbf{Definition:}
@@ -156,6 +164,9 @@ void ylabel( const std::string& label,
 %
 \textbf{Examples:} See \texttt{xlabel}.
 
+%%%%%%%%%
+\newpage
+%%%%%%%%%
 \command{legend}
 
 \textbf{Definition:}
@@ -170,13 +181,29 @@ void legend( const double& xPos = 1,
 \begin{lstlisting}
   mgl::Figure fig;
   fig.plot(x0, y0).label("My Function");
-  fig.legend(); // 'activate' legend 
+  fig.[**legend**](); // 'activate' legend 
   fig.save("plot");
-  
+ 
+  mgl::Figure fig;
+  fig.plot(x0, y0).label("My Function");
+  fig.[**legend**](0.5, 0.25); // set position to (0.5, 0.25)
+  fig.save("plot");
+
   mgl::Figure fig;
   fig.plot(x0, y0).label("My Function");
   fig.save("plot"); // legend won't appear as legend() hasn't been called
 \end{lstlisting}
+
+\begin{figure}[h]
+  \centering
+  \begin{subfigure}[hb]{.32\linewidth}
+    \includegraphics[width=\textwidth]{./examples_from_doc/legend/legend_1.eps}
+  \end{subfigure}
+  \hspace{2cm}
+  \begin{subfigure}[hb]{.32\linewidth}
+    \includegraphics[width=\textwidth]{./examples_from_doc/legend/legend_2.eps}
+  \end{subfigure}
+\end{figure}
 
 \command{setlog}
 
@@ -192,11 +219,11 @@ void setlog( const bool& logx = false,
 \textbf{Examples:}
 \begin{lstlisting}
   mgl::Figure fig;
-  fig.setlog(true, false); // -> semilogx
+  fig.[**setlog**](true, false); // -> semilogx
   fig.plot(x0, y0); 
-  fig.setlog(false, true); // -> semilogy
+  fig.[**setlog**](false, true); // -> semilogy
   fig.plot(x1, y1);
-  fig.setlog(true, true); // -> loglog
+  fig.[**setlog**](true, true); // -> loglog
   fig.plot(x2, y2);
   fig.save("plot.eps"); // ATTENTION: all plots will have been plotted in loglog-scale 
 
@@ -205,7 +232,18 @@ void setlog( const bool& logx = false,
   fig.save("plot.eps"); // -> default (= linear) scaling
 \end{lstlisting}
 
-\newpage
+\begin{figure}[h]
+  \centering
+  \begin{subfigure}[hb]{.32\linewidth}
+    \includegraphics[width=\textwidth]{./examples_from_doc/setlog/setlog_1.eps}
+  \end{subfigure}
+    \hspace{2cm}
+  \begin{subfigure}[hb]{.32\linewidth}
+    \includegraphics[width=\textwidth]{./examples_from_doc/setlog/setlog_2.eps}
+  \end{subfigure}
+\end{figure}
+
+
 \command{plot} 
 
 \textbf{Definition:} 
@@ -228,17 +266,33 @@ Furthermore \texttt{x} and \texttt{y} must have same length. \\ \\
 \textbf{Examples:}
 \begin{lstlisting}
   mgl::Figure fig;
-  fig.plot(x, y, "b");
+  fig.[**plot**](x, y, "g;"); // green and dashed linestyle
   fig.save("data.eps");
 
   mgl::Figure fig;
-  fig.plot(x, y); // OK - style is optional
+  fig.[**plot**](x, y); // OK - style is optional
   fig.save("data.eps");
 
   mgl::Figure fig;
-  fig.plot(x, y, " *r", "Data w/ red dots"); // ' *r' equals matlab/python 'r*'
+  fig.[**plot**](x, y, " *r", "Data w/ red dots"); // ' *r' equals matlab/python 'r*'
   fig.save("data.eps");
 \end{lstlisting}
+
+\begin{figure}[h]
+  \centering
+  \begin{subfigure}[hb]{.32\linewidth}
+    \includegraphics[width=\textwidth]{./examples_from_doc/plot/plot_1.eps}
+  \end{subfigure}
+    \hfill
+  \begin{subfigure}[hb]{.32\linewidth}
+    \includegraphics[width=\textwidth]{./examples_from_doc/plot/plot_2.eps}
+  \end{subfigure}
+    \hfill
+  \begin{subfigure}[hb]{.32\linewidth}
+    \includegraphics[width=\textwidth]{./examples_from_doc/plot/plot_3.eps}
+  \end{subfigure}
+\end{figure}
+
 
 \command{plot3}
 
@@ -255,11 +309,21 @@ void plot3( const xVector& x,
 \textbf{Examples:}
 \begin{lstlisting}
   mgl::Figure fig;
-  fig.plot3(x, y, z);
+  fig.[**plot3**](x, y, z);
   fig.save("trajectories.eps");
 \end{lstlisting}
 
+\begin{figure}[h]
+  \centering
+  \begin{subfigure}[hb]{0.45\linewidth}
+    \includegraphics[width=\textwidth]{./examples_from_doc/plot3/plot3_1.eps}
+  \end{subfigure}
+\end{figure}
+  
 
+%%%%%%%%%
+\newpage
+%%%%%%%%%
 \command{fplot}
 
 \textbf{Definition:}
@@ -272,18 +336,29 @@ void fplot( const std::string& function,
 \textbf{Examples:}
 \begin{lstlisting}
   mgl::Figure fig;
-  fig.fplot("3*x^2 + 4.5/x + exp(x)");
-  fig.fplot("exp(cos(pi*x))", "r").label("some periodic function");
-  fig.ranges(0.5, 2, 0, 5); // be sure to set ranges for fplot!
+  fig.[**fplot**]("(3*x^2 - 4.5/x)*exp(-x/1.3)");
+  fig.[**fplot**]("5*sin(5*x)*exp(-x)", "r").label("5sin(5x)*e^{-x}");
+  fig.ranges(0.5, 5, -5, 5); // be sure to set ranges for fplot!
   fig.save("plot.eps");
 
   mgl::Figure fig;
   fig.plot(x, y, "b").label("Benchmark");
-  fig.fplot("x^2", "k;").label("\\ O(x^2)");
+  fig.[**fplot**]("x^2", "k;").label("\\ O(x^2)");
   // here we don't set the ranges as it uses the range given by the x,y data
   // and we use fplot to draw a reference line (O(x^2))
   fig.save("runtimes.eps"); 
 \end{lstlisting}
+
+\begin{figure}[h]
+  \centering
+  \begin{subfigure}[hb]{0.32\linewidth}
+    \includegraphics[width=\textwidth]{./examples_from_doc/fplot/fplot_1.eps}
+  \end{subfigure}
+  \hspace{2cm}
+  \begin{subfigure}[hb]{0.32\linewidth}
+    \includegraphics[width=\textwidth]{./examples_from_doc/fplot/fplot_2.eps}
+  \end{subfigure}
+\end{figure}
 
 \command{ranges}
 
@@ -300,20 +375,34 @@ void ranges( const double& xMin,
 \textbf{Examples:}
 \begin{lstlisting}
   mgl::Figure fig;
-  fig.ranges(-1,1,-1,1);
+  fig.[**ranges**](-1,1,-1,1);
   fig.plot(x, y, "b");
 
   mgl::Figure fig;
   fig.plot(x, y, "b");
-  fig.ranges(0, 2.3, 4, 5); // ranges can be called before or after 'plot'
+  fig.[**ranges**](0, 2.3, 4, 5); // ranges can be called before or after 'plot'
 
   mgl::Figure fig;
-  fig.ranges(-1, 1, 0, 5);
+  fig.[**ranges**](-1, 1, 0, 5);
   fig.setlog(true, true); // will run but MathGL will throw a warning 
   fig.plot(x, y, "b");
 \end{lstlisting}
 
-\newpage
+\begin{figure}
+  \centering
+  \begin{subfigure}[hb]{0.32\linewidth}
+    \includegraphics[width=\textwidth]{./examples_from_doc/ranges/ranges_1.eps}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[hb]{0.32\linewidth}
+    \includegraphics[width=\textwidth]{./examples_from_doc/ranges/ranges_2.eps}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[hb]{0.32\linewidth}
+    \includegraphics[width=\textwidth]{./examples_from_doc/ranges/ranges_3.eps}
+  \end{subfigure}
+\end{figure}
+
 \command{save}
 
 \textbf{Definition:}
@@ -326,13 +415,13 @@ void save( const std::string& file )
 \textbf{Examples:}
 \begin{lstlisting}
   mgl::Figure fig;
-  fig.save("plot.eps"); // OK
+  fig.[**save**]("plot.eps"); // OK
 
   mgl::Figure fig;
-  fig.save("plot"); // OK - will be saved as plot.eps
+  fig.[**save**]("plot"); // OK - will be saved as plot.eps
 
   mgl::Figure fig;
-  fig.save("plot.png"); // OK - but needs -lpng flag!
+  fig.[**save**]("plot.png"); // OK - but needs -lpng flag!
 \end{lstlisting}
 
 \command{title}
