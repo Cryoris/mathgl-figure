@@ -1,4 +1,5 @@
 build
+main
 *.out
 *.aux
 *.log
