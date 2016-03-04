@@ -1,7 +1,8 @@
 build
-a.out
+*.out
 *.aux
 *.log
 *.swp
+*.eps
 CMakeFiles
-
+CMakeCache.txt
