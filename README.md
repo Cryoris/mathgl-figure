@@ -11,7 +11,7 @@ __UNIX__ (Linux, Mac OS X)
 
 ## Example
 
-![opening example](https://github.com/Cryoris/mathgl-figure/raw/master/Documentation/examples_from_doc/opening-example-eps-converted-to.pdf)
+![opening example](https://raw.githubusercontent.com/Cryoris/mathgl-figure/master/Documentation/opening-example.eps)
 
 ```c++
 #include <vector>
