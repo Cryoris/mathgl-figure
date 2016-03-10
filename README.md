@@ -34,3 +34,5 @@ int main()
   return 0;
 }
 ```
+
+For more examples see ![opening example](Documentation/doc.pdf)
