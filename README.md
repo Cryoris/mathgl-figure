@@ -11,6 +11,8 @@ __UNIX__ (Linux, Mac OS X)
 
 ## Example
 
+![opening example](https://github.com/Cryoris/mathgl-figure/raw/master/Documentation/examples_from_doc/opening-example-eps-converted-to.pdf)
+
 ```c++
 #include <vector>
 #include <Eigen/Dense>
