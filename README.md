@@ -35,4 +35,4 @@ int main()
 }
 ```
 
-For more examples see ![opening example](Documentation/doc.pdf)
+For more examples see the ![documentation](Documentation/doc.pdf)
