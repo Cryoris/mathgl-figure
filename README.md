@@ -3,7 +3,7 @@
 ## Dependencies
 
 - [mathgl](http://mathgl.sourceforge.net/doc_en/Main.html)  (version >= 2)
-- [eigen](http://eigen.tuxfamily.org/)  (version >= 3)
+- [[eigen]](http://eigen.tuxfamily.org/)  (version >= 3)
 
 ## Installation
 
