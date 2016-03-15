@@ -290,6 +290,9 @@ void Figure::save(const std::string& file) {
   // Set size. This *must* be the first function called on the mglGraph
   gr_.SetSize(figWidth_, figHeight_);
 
+  // Set position of scale annotations
+  gr_.SetTuneTicks(true, 1.04);
+
   // find out which subplot type to use
   std::string subPlotType = "";
   if (yMglLabel_.str_.size() != 0){
@@ -337,7 +340,8 @@ void Figure::save(const std::string& file) {
 
   // Add axis
   if (axis_){
-    gr_.Axis();
+    gr_.Axis("y","value 90"); // rotate y axis ticks by 90 degrees
+    gr_.Axis("xz"); // set x (and z) axis
   }
 
   gr_.Box();

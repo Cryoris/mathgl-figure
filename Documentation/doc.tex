@@ -56,16 +56,16 @@ This short example code will show, how the Figure class can be used.
 int main()
 {
   std::vector<double> x(10), y(10);
-  for (int i = 1; i <= 10; ++i){ 
-    x[i] = i; y[i] = std::exp(std::cos(0.2*i));
+  for (int i = 0; i < 10; ++i){ 
+    x[i] = i; y[i] = std::exp(-0.2*i)*std::cos(i));
   }
   Eigen::VectorXd u = Eigen::VectorXd::LinSpaced(500, 1, 10),
-                  v = ( (0.2*u.array()).cos().exp() ).matrix();
-  mgl::Figure fig;
-  fig.[*plot*](x, y, " +r").[*label*]("Sample Data");
-  fig.[*plot*](u, v, "b").[*label*]("Function");
-  fig.[*legend*]();
-  fig.[*save*]("plot.eps");
+                  v = ( u.array().cos()*(-0.2*u).array().exp() ).matrix();
+  [**mgl**]::[**Figure**] fig;
+  fig.[**plot**](x, y, " +r").[**label**]("Sample Data");
+  fig.[**plot**](u, v, "b").[**label**]("Function");
+  fig.[**legend**]();
+  fig.[**save**]("plot.eps");
   return 0;
 }
 \end{lstlisting}
@@ -99,7 +99,7 @@ void grid( const bool& on = true,
 
   mgl::Figure fig;
   fig.plot(x, y);
-  fig.[**grid**](true, "!", "h"); // gray fine mesh
+  fig.[**grid**](true, "!", "h"); // grey fine mesh
   fig.save("plot.eps");
 \end{lstlisting}
 
