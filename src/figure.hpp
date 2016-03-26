@@ -67,6 +67,8 @@ public:
 
   void legend(const double& xPos = 1, const double& yPos = 1);
 
+  void addlabel(const std::string& label, const std::string& style);
+
   template <typename yVector>
   MglPlot& plot(const yVector& y, std::string style = "");
 
@@ -111,6 +113,7 @@ private:
   double fontSizePT_; // font size in PT
   int figHeight_, figWidth_; // height and width of the graphic
   std::vector<std::unique_ptr<MglPlot> > plots_; // x, y (and z) data for the plots
+  std::vector<std::pair<std::string, std::string>> additionalLabels_; // manually added labels 
 };
 
 /* plot y data                                                         *

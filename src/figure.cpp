@@ -66,10 +66,17 @@ void Figure::setFontSize(int size) {
   fontSizePT_ = size;
 }
 
+/* enable to manually add legend entries       *
+ * PRE : -                                     *
+ * POST: label + style are added to the legend */
+void Figure::addlabel(const std::string& label, const std::string& style) {
+  additionalLabels_.push_back(std::pair<std::string, std::string>(label, style));
+}
+
 /* change grid settings                                                         *
  * PRE : -                                                                      *
  * POST: No grid if on is false, grid style is gridType, grid color is gridCol. *
- *       For those arguments which are not given default settings are used.      */
+ *       For those arguments which are not given default settings are used.     */
 void Figure::grid(bool on, const std::string& gridType,  const std::string& gridCol)
 {
   if (on){
@@ -340,14 +347,22 @@ void Figure::save(const std::string& file) {
 
   // Add axis
   if (axis_){
+# if 0
     gr_.Axis("y","value 90"); // rotate y axis ticks by 90 degrees
     gr_.Axis("xz"); // set x (and z) axis
+# else
+    gr_.Axis();
+# endif
   }
 
   gr_.Box();
   // Plot
   for(auto &p : plots_) {
     p->plot(&gr_);
+  }
+
+  for (auto s : additionalLabels_) {
+    gr_.AddLegend(s.first.c_str(), s.second.c_str());
   }
 
   // Add legend
