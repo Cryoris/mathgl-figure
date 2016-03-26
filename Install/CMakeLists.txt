@@ -10,7 +10,7 @@ project( FigureClass )
 # definitions needed to build libFigure.a properly
 add_definitions( -Wall -std=gnu++11 -fext-numeric-literals )
 
-set( CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../modules/ )
+set( CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../Modules/ )
 
 # set path to src directory
 set( SRC ${CMAKE_CURRENT_SOURCE_DIR}/../src/ )
