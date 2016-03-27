@@ -83,6 +83,8 @@ public:
 
   void ranges(const double& xMin, const double& xMax, const double& yMin, const double& yMax);
 
+  void save(const std::string& file);
+
   void setlog(bool logx = false, bool logy = false, bool logz = false);
 
   void setHeight(int height);
@@ -91,7 +93,8 @@ public:
 
   void setFontSize(int size);
 
-  void save(const std::string& file);
+  template <typename Matrix>
+  MglPlot& spy(const Matrix& A, const std::string& style = "b");
 
   void title(const std::string& text);
 
@@ -203,6 +206,51 @@ MglPlot& Figure::plot3(const xVector& x, const yVector& y, const zVector& z, std
   plots_.emplace_back(std::unique_ptr<MglPlot3d>(new MglPlot3d(xd, yd, zd, style)));
   return *plots_.back().get();
 }
+
+template <typename Matrix>
+MglPlot& Figure::spy(const Matrix& A, const std::string& style) {
+
+  has_3d_ = false;
+
+  // determine radius of dots
+  std::string radius = "8";
+  if (std::max(A.cols(), A.rows()) > 99) {
+    radius = "5";
+  }
+  if (std::max(A.cols(), A.rows()) > 999) {
+    radius = "3";
+  }
+  if (std::max(A.cols(), A.rows()) > 9999) {
+    radius = "1";
+  }
+  
+  // counting nonzero entries
+  unsigned long counter = 0;
+  // save positions of entries in these vectors
+  std::vector<double> x, y;
+
+  ranges_ = {0, A.cols() - 1, 0, A.rows() - 1};
+  for (unsigned i = 0; i < A.cols(); ++i) {
+    for (unsigned j = 0; j < A.rows(); ++j) {
+      if (A(i,j) != 0) {
+        ++counter;
+        x.push_back(i);
+        y.push_back(A.rows() - j - 1);
+      }
+    }
+  }
+  mglData xd(x.data(), x.size()),
+          yd(y.data(), y.size());
+
+  std::stringstream label;
+  label << "nnz = ";
+  label << counter;
+  xMglLabel_ = MglLabel(label.str());
+
+  plots_.emplace_back(std::unique_ptr<MglSpy>(new MglSpy(xd, yd, style + radius)));
+  return *plots_.back().get();
+}
+
 
 } // end namespace
 

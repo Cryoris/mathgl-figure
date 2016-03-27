@@ -9,19 +9,19 @@ namespace mgl {
 class MglPlot {
 public:
 
-  MglPlot(const std::string & style)
+  MglPlot(const std::string& style)
     : style_{style}
     , legend_{""}
   {}
   virtual void plot(mglGraph* gr) = 0;
   virtual bool is_3d() = 0;
 
-  MglPlot& label(const std::string &l) {
+  MglPlot& label(const std::string& l) {
     legend_ = l;
     return *this;
   }
 
-  MglPlot& style(const std::string &s) {
+  MglPlot& style(const std::string& s) {
     style_ = s;
     return *this;
   }
@@ -43,13 +43,13 @@ protected:
 class MglPlot2d : public MglPlot {
 public:
 
-  MglPlot2d(const mglData& xd, const mglData& yd, const std::string &style)
+  MglPlot2d(const mglData& xd, const mglData& yd, const std::string& style)
     : MglPlot(style)
     , xd_(xd)
     , yd_(yd)
   {}
 
-  void plot(mglGraph * gr) {
+  void plot(mglGraph* gr) {
     gr->Plot(xd_, yd_, style_.c_str());
     // only add the legend-entry if there is one, otherwise we might end up
     // with a legend-entry containing the line style but no description
@@ -77,7 +77,7 @@ public:
     , zd_(zd)
   {}
 
-  void plot(mglGraph * gr) {
+  void plot(mglGraph* gr) {
     gr->Plot(xd_, yd_, zd_, style_.c_str());
     // only add the legend-entry if there is one, otherwise we might end up
     // with a legend-entry containing the line style but no description
@@ -99,12 +99,12 @@ private:
 class MglFPlot : public MglPlot {
 public:
 
-  MglFPlot(const std::string & fplot_str, const std::string &style)
+  MglFPlot(const std::string& fplot_str, const std::string& style)
     : MglPlot(style)
     , fplot_str_(fplot_str)
   {}
 
-  void plot(mglGraph * gr) {
+  void plot(mglGraph* gr) {
     gr->FPlot(fplot_str_.c_str(), style_.c_str());
     // only add the legend-entry if there is one, otherwise we might end up
     // with a legend-entry containing the line style but no description
@@ -121,6 +121,29 @@ private:
   std::string fplot_str_;
 };
 
+class MglSpy : public MglPlot {
+public:
+
+  MglSpy(const mglData& xd, const mglData& yd, const std::string& style) 
+    : MglPlot(style)
+    , xd_(xd)
+    , yd_(yd)
+  {}
+
+  bool is_3d() {
+    return false;
+  }
+
+  void plot(mglGraph* gr) {
+    mglData zd(xd_);
+    zd.Modify("0");
+    gr->Dots(xd_, yd_, zd, style_.c_str());
+  }
+
+private:
+  mglData xd_;
+  mglData yd_;
+};
 
 } // end namespace
 #endif
