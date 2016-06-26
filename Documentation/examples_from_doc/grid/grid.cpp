@@ -6,13 +6,13 @@ int main () {
   prepare_data(x, y, 2);
 
   mgl::Figure f, g;
-  f.title("Unset grid");
-  f.grid(false);
+  f.title("Set grid");
+  f.grid();
   f.plot(x, y);
   f.save("grid_1.eps");
 
-  g.title("Fine, grey grid");
-  g.grid(true, "!", "h");
+  g.title("Fine, red grid");
+  g.grid(true, "!", "r");
   g.plot(x, y);
   g.save("grid_2");
 

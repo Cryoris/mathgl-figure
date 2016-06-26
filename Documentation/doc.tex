@@ -83,7 +83,7 @@ int main()
 
 \textbf{Definition:}
 \begin{lstlisting}
-void grid( const bool& on = true, 
+void grid( const bool& on = true,
            const std::string& gridType = "-", 
            const std::string& gridCol = "h" )
 \end{lstlisting}
@@ -94,7 +94,7 @@ void grid( const bool& on = true,
 \begin{lstlisting}
   mgl::Figure fig;
   fig.plot(x, y);
-  fig.[**grid**](false); // unset grid
+  fig.grid(); // turn on grid
   fig.save("plot.eps");
 
   mgl::Figure fig;
