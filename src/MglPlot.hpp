@@ -145,5 +145,31 @@ private:
   mglData yd_;
 };
 
+class MglBarPlot : public MglPlot {
+public:
+  MglBarPlot(const mglData& xd, const mglData& yd, const std::string& style) 
+    : MglPlot(style)
+    , xd_(xd)
+    , yd_(yd)
+  {}
+
+  bool is_3d() {
+    return false;
+  }
+
+  void plot(mglGraph* gr) {
+    gr->Bars(xd_, yd_, style_.c_str());
+    // only add the legend-entry if there is one, otherwise we might end up
+    // with a legend-entry containing the line style but no description
+    if (legend_.size() > 0) { 
+      gr->AddLegend(legend_.c_str(), style_.c_str());
+    }
+  }
+
+private:
+  mglData xd_;
+  mglData yd_;
+};
+
 } // end namespace
 #endif

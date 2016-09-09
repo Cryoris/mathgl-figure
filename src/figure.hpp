@@ -72,6 +72,13 @@ public:
   void addlabel(const std::string& label, const std::string& style);
 
   template <typename yVector>
+  MglPlot& bar(const yVector& y, std::string style = "");
+
+  template <typename xVector, typename yVector>
+  typename std::enable_if<!std::is_same<typename std::remove_pointer<typename std::decay<yVector>::type>::type, char >::value, MglPlot&>::type
+  bar(const xVector& x, const yVector& y, std::string style =  "");
+
+  template <typename yVector>
   MglPlot& plot(const yVector& y, std::string style = "");
 
   template <typename xVector, typename yVector>
@@ -136,6 +143,54 @@ private:
   std::vector<std::unique_ptr<MglPlot> > plots_; // x, y (and z) data for the plots
   std::vector<std::pair<std::string, std::string>> additionalLabels_; // manually added labels 
 };
+
+/* bar plot for given y data                                                       *
+ * PRE : -                                                                         *
+ * POST: add bar plot of [1:length(y)]-y to plot queue with given style (optional) */
+template <typename yVector>
+MglPlot& Figure::bar(const yVector& y, std::string style) 
+{
+  // build a fitting x vector for the y vector
+  std::vector<double> x(y.size());
+  std::iota(x.begin(), x.end(), 1);
+  return bar(x, y, style);
+}
+
+/* bar plot of x,y data                                                *
+ * PRE : -                                                             *
+ * POST: add bar plot of x-y to plot queue with given style (optional) */
+template <typename xVector, typename yVector>
+// the long template magic expression ensures this function is not called if yVector is a string (which would be allowed as it is a templated argument)
+typename std::enable_if<!std::is_same<typename std::remove_pointer<typename std::decay<yVector>::type>::type, char >::value, MglPlot&>::type
+Figure::bar(const xVector& x, const yVector& y, std::string style)
+{
+  if (x.size() != y.size()) {
+    std::cerr << "In function Figure::plot(): Vectors must have same sizes!";
+  }
+
+  // build mglData from the x and y vectors
+  mglData xd = make_mgldata(x);
+  mglData yd = make_mgldata(y);
+
+  // if the ranges are set to auto set the new ranges 
+  if(autoRanges_){
+    setRanges(xd, yd, 0.); // the 0 stands no top+bottom margin
+  }
+  
+  // check if a style is given,
+  // if yes: add that style to the style queue and remove it from the style-deque,
+  // if no : get a new style from the style-deque
+  if (style.size() == 0) {
+    style = styles_.get_next();
+  }
+  else {
+    styles_.eliminate(style);
+  }
+
+  // put the x-y data in the plot queue
+  plots_.emplace_back(std::unique_ptr<MglBarPlot>(new MglBarPlot(xd, yd, style)));
+  return *plots_.back().get();
+}
 
 /* plot y data                                                         *
  * PRE : -                                                             *
@@ -249,7 +304,7 @@ MglPlot& Figure::spy(const Matrix& A, const std::string& style) {
   // x for the col-index and y for the row-index
   std::vector<double> x, y;
 
-  ranges_ = {0, A.cols() + 1, 0, A.rows() + 1};
+  ranges_ = std::array<double, 4>{0, A.cols() + 1, 0, A.rows() + 1};
   for (unsigned i = 0; i < A.rows(); ++i) {
     for (unsigned j = 0; j < A.cols(); ++j) {
       if (A(i,j) != 0) {
@@ -296,7 +351,7 @@ MglPlot& Figure::spy(const Eigen::SparseMatrix<Scalar>& A, const std::string& st
   // save positions of entries in these vectors
   std::vector<double> x, y;
 
-  ranges_ = {0, A.cols() + 1, 0, A.rows() + 1};
+  ranges_ = std::array<double, 4>{0, A.cols() + 1, 0, A.rows() + 1};
   // iterate over nonzero entries, using method suggested in Eigen::Sparse documentation
   for (unsigned k = 0; k < A.outerSize(); ++k) {
     for (typename Eigen::SparseMatrix<Scalar>::InnerIterator it(A, k); it; ++it) {
